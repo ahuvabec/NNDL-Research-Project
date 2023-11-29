@@ -29,29 +29,40 @@ transforms = T.Compose([T.Resize((256,256)),
 print('Defining models!')
 generator = UnetGenerator().to(device)
 discriminator = ConditionalDiscriminator().to(device)
+
 # optimizers
 g_optimizer = torch.optim.Adam(generator.parameters(), lr=args.lr, betas=(0.5, 0.999))
 d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=args.lr, betas=(0.5, 0.999))
+
 # loss functions
 g_criterion = GeneratorLoss(alpha=100)
 d_criterion = DiscriminatorLoss()
-# dataset
+
+# datasets
 print(f'Downloading "{args.dataset.upper()}" dataset!')
-if args.dataset=='cityscapes':
-    dataset = Cityscapes(root='.', transform=transforms, download=True, mode='train')
-elif args.dataset=='maps':
-    dataset = Maps(root='.', transform=transforms, download=True, mode='train')
+if args.dataset == 'cityscapes':
+    train_dataset = Cityscapes(root='.', transform=transforms, download=True, mode='train')
+    val_dataset = Cityscapes(root='.', transform=transforms, download=True, mode='val')
+elif args.dataset == 'maps':
+    train_dataset = Maps(root='.', transform=transforms, download=True, mode='train')
+    val_dataset = Maps(root='.', transform=transforms, download=True, mode='val')
 else:
-    dataset = Facades(root='.', transform=transforms, download=True, mode='train')
-dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
+    train_dataset = Facades(root='.', transform=transforms, download=True, mode='train')
+    val_dataset = Facades(root='.', transform=transforms, download=True, mode='val')
+
+train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
+
 print('Start of training process!')
 logger = Logger(filename=args.dataset)
 for epoch in range(args.epochs):
+    generator.train()
+    discriminator.train()
     ge_loss=0.
     de_loss=0.
     start = time.time()
-    bar = IncrementalBar(f'[Epoch {epoch+1}/{args.epochs}]', max=len(dataloader))
-    for x, real in dataloader:
+    bar = IncrementalBar(f'[Epoch {epoch+1}/{args.epochs}]', max=len(train_dataloader))
+    for x, real in train_dataloader:
         x = x.to(device)
         real = real.to(device)
 
@@ -79,17 +90,54 @@ for epoch in range(args.epochs):
         ge_loss += g_loss.item()
         de_loss += d_loss.item()
         bar.next()
-    bar.finish()  
-    # obttain per epoch losses
-    g_loss = ge_loss/len(dataloader)
-    d_loss = de_loss/len(dataloader)
+    bar.finish()
+
+    # Validation Step
+    generator.eval()
+    discriminator.eval()
+    ge_val_loss=0.
+    de_val_loss=0.
+    with torch.no_grad():
+        bar = IncrementalBar(f'[Validation]', max=len(val_dataloader))
+        for val_x, val_real in val_dataloader:
+            val_x = val_x.to(device)
+            val_real = val_real.to(device)
+
+            # Generator`s loss for validation
+            val_fake = generator(val_x)
+            val_fake_pred = discriminator(val_fake, val_x)
+            val_g_loss = g_criterion(val_fake, val_real, val_fake_pred)
+
+            # Discriminator`s loss for validation
+            val_fake = generator(val_x).detach()
+            val_fake_pred = discriminator(val_fake, val_x)
+            val_real_pred = discriminator(val_real, val_x)
+            val_d_loss = d_criterion(val_fake_pred, val_real_pred)
+
+            # add batch losses
+            ge_val_loss += val_g_loss.item()
+            de_val_loss += val_d_loss.item()
+            bar.next()
+        bar.finish()
+
+    # obtain per epoch losses for both training and validation
+    g_loss = ge_loss / len(train_dataloader)
+    d_loss = de_loss / len(train_dataloader)
+    val_g_loss = ge_val_loss / len(val_dataloader)
+    val_d_loss = de_val_loss / len(val_dataloader)
+
     # count timeframe
     end = time.time()
     tm = (end - start)
+
     logger.add_scalar('generator_loss', g_loss, epoch+1)
     logger.add_scalar('discriminator_loss', d_loss, epoch+1)
-    logger.save_weights(generator.state_dict(), 'generator')
-    logger.save_weights(discriminator.state_dict(), 'discriminator')
-    print("[Epoch %d/%d] [G loss: %.3f] [D loss: %.3f] ETA: %.3fs" % (epoch+1, args.epochs, g_loss, d_loss, tm))
+    logger.add_scalar('val_generator_loss', val_g_loss, epoch + 1)
+    logger.add_scalar('val_discriminator_loss', val_d_loss, epoch + 1)
+
+    logger.save_weights(generator.state_dict(), 'generator-base')
+    logger.save_weights(discriminator.state_dict(), 'discriminator-base')
+    print("[Epoch %d/%d] [G loss: %.3f] [D loss: %.3f] [Val G loss: %.3f] [Val D loss: %.3f] ETA: %.3fs"
+          % (epoch + 1, args.epochs, g_loss, d_loss, val_g_loss, val_d_loss, tm))
 logger.close()
 print('End of training process!')
