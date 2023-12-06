@@ -127,21 +127,21 @@ class UnetGenerator(nn.Module):
         e7 = self.encoder7(e6)
         e8 = self.encoder8(e7)
         
-        # decoder forward + skip connections (using multiplication)
+        # decoder forward + skip connections (using addition)
         d8 = self.decoder8(e8)
-        d8 = d8 * e7  # Multiplying instead of concatenating
+        d8 = d8 + e7  # Adding instead of concatenating
         d7 = self.decoder7(d8)
-        d7 = d7 * e6  # Multiplying
+        d7 = d7 + e6  # Adding
         d6 = self.decoder6(d7)
-        d6 = d6 * e5  # Multiplying
+        d6 = d6 + e5  # Adding
         d5 = self.decoder5(d6)
-        d5 = d5 * e4  # Multiplying
+        d5 = d5 + e4  # Adding
         d4 = self.decoder4(d5)
-        d4 = d4 * e3  # Multiplying
+        d4 = d4 + e3  # Adding
         d3 = self.decoder3(d4)
-        d3 = d3 * e2  # Multiplying
+        d3 = d3 + e2  # Adding
         d2 = F.relu(self.decoder2(d3))
-        d2 = d2 * e1  # Multiplying
+        d2 = d2 + e1  # Adding
         d1 = self.decoder1(d2)
         
         return torch.tanh(d1)
