@@ -108,13 +108,13 @@ class UnetGenerator(nn.Module):
         self.encoder8 = EncoderBlock(512, 512, norm=False)
         
         self.decoder8 = DecoderBlock(512, 512, dropout=True)
-        self.decoder7 = DecoderBlock(2*512, 512, dropout=True)
-        self.decoder6 = DecoderBlock(2*512, 512, dropout=True)
-        self.decoder5 = DecoderBlock(2*512, 512)
-        self.decoder4 = DecoderBlock(2*512, 256)
-        self.decoder3 = DecoderBlock(2*256, 128)
-        self.decoder2 = DecoderBlock(2*128, 64)
-        self.decoder1 = nn.ConvTranspose2d(2*64, 3, kernel_size=4, stride=2, padding=1)
+        self.decoder7 = DecoderBlock(512, 512, dropout=True)
+        self.decoder6 = DecoderBlock(512, 512, dropout=True)
+        self.decoder5 = DecoderBlock(512, 512)
+        self.decoder4 = DecoderBlock(512, 256)
+        self.decoder3 = DecoderBlock(256, 128)
+        self.decoder2 = DecoderBlock(128, 64)
+        self.decoder1 = nn.ConvTranspose2d(64, 3, kernel_size=4, stride=2, padding=1)
         
     def forward(self, x):
         # encoder forward
@@ -126,21 +126,22 @@ class UnetGenerator(nn.Module):
         e6 = self.encoder6(e5)
         e7 = self.encoder7(e6)
         e8 = self.encoder8(e7)
-        # decoder forward + skip connections
+        
+        # decoder forward + skip connections (using multiplication)
         d8 = self.decoder8(e8)
-        d8 = torch.cat([d8, e7], dim=1)
+        d8 = d8 * e7  # Multiplying instead of concatenating
         d7 = self.decoder7(d8)
-        d7 = torch.cat([d7, e6], dim=1)
+        d7 = d7 * e6  # Multiplying
         d6 = self.decoder6(d7)
-        d6 = torch.cat([d6, e5], dim=1)
+        d6 = d6 * e5  # Multiplying
         d5 = self.decoder5(d6)
-        d5 = torch.cat([d5, e4], dim=1)
+        d5 = d5 * e4  # Multiplying
         d4 = self.decoder4(d5)
-        d4 = torch.cat([d4, e3], dim=1)
+        d4 = d4 * e3  # Multiplying
         d3 = self.decoder3(d4)
-        d3 = torch.cat([d3, e2], dim=1)
+        d3 = d3 * e2  # Multiplying
         d2 = F.relu(self.decoder2(d3))
-        d2 = torch.cat([d2, e1], dim=1)
+        d2 = d2 * e1  # Multiplying
         d1 = self.decoder1(d2)
         
         return torch.tanh(d1)
