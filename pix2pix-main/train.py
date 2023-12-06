@@ -79,6 +79,8 @@ for dataset_name in datasets_to_process:
     logger = Logger(filename=dataset_name)
     
     # Training loop
+    best_val_loss = float('inf')
+    epochs_since_improvement = 0
     for epoch in range(args.epochs):
         generator.train()
         discriminator.train()
@@ -121,6 +123,18 @@ for dataset_name in datasets_to_process:
         discriminator.eval()
         ge_val_loss=0.
         de_val_loss=0.
+        current_val_loss = (ge_val_loss + de_val_loss) / len(val_dataloader)
+        # Early stopping check
+        if current_val_loss < best_val_loss:
+            best_val_loss = current_val_loss
+            epochs_since_improvement = 0
+        else:
+            epochs_since_improvement += 1
+        # Break the training loop if validation loss hasn't improved for 10 epochs
+        if epochs_since_improvement >= 10:
+            print(f"Early stopping triggered after {epoch + 1} epochs due to no improvement in validation loss")
+            break
+
         with torch.no_grad():
             bar = IncrementalBar(f'[Validation]', max=len(val_dataloader))
             for val_x, val_real in val_dataloader:
