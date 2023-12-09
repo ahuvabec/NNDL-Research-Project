@@ -7,7 +7,8 @@ from gan.discriminator import ConditionalDiscriminator
 import argparse
 from dataset import Cityscapes, Facades, Maps
 import matplotlib.pyplot as plt
-#from torchvision.transforms.functional import to_pil_image
+from progress.bar import IncrementalBar
+#from PIL import Image
 
 # Argument Parser
 parser = argparse.ArgumentParser(prog='top', description='Test Pix2Pix Generator and Discriminator')
@@ -28,13 +29,17 @@ discriminator = ConditionalDiscriminator().to(device)
 discriminator.load_state_dict(torch.load(args.discriminator_path))
 discriminator.eval()
 
-# Define the testing dataset and dataloader
+# Original transformation
 transforms = T.Compose([T.Resize((256, 256)),
                         T.ToTensor(),
                         T.Normalize(mean=[0.5, 0.5, 0.5],
                                      std=[0.5, 0.5, 0.5])])
+# Inverse transformation
+inverse_transform = T.Compose([
+    T.ToImage(),
+])
 
-# Choose the appropriate dataset based on the training dataset
+# Choose the appropriate dataset based on the training dataset (should be downloaded already)
 # datasets
 print(f'Accessing "{args.dataset.upper()}" dataset!')
 if args.dataset == 'cityscapes':
@@ -45,36 +50,48 @@ else:
     test_dataset = Facades(root='.', transform=transforms, download=False, mode='test')
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
+num_plots = 2
+
 # Generate outputs using the trained generator
 with torch.no_grad():
-    for i, (input_data, _) in enumerate(test_dataloader):
-        input_data = input_data.to(device)
-        print("input_data.size(): ", input_data.size())
+    bar = IncrementalBar(f'[Testing ..]', max=len(test_dataloader))
+    for i, (x, real) in enumerate(test_dataloader):
+        x = x.to(device)
+        real = real.to(device)
+        # print("x.size(): ", x.size())
+        # print("real.size(): ", real.size())
 
         # Generate output
-        output = generator(input_data)
-        print("output.size(): ", output.size())
+        output = generator(x)
+        # print("output.size(): ", output.size())
 
-        # # Use the discriminator to classify the generated output
-        # fake_pred = discriminator(output, input_data)
+        # # discriminator (?)
+        # fake_pred = discriminator(output, x)
         # print("fake_pred.size(): ", fake_pred.size())
 
-        # Save or visualize the generated output and discriminator prediction as needed
-        # For example, save the output image and discriminator prediction
-        output_image = output.squeeze().cpu().numpy().transpose((1, 2, 0))
-        print("output_image.size(): ", output.size())
-        # Save or visualize the output_image and fake_pred as needed
-        # ...
+        # Plot
+        if (i < num_plots):
+            # Convert tensors back to PIL images
+            input_image = inverse_transform(x.squeeze().cpu())
+            generated_image = inverse_transform(output.squeeze().cpu())
+            real_image = inverse_transform(real.squeeze().cpu())
 
-        # # Convert the NumPy array to a PIL Image for visualization
-        # output_pil = to_pil_image(torch.from_numpy((output_image + 1) / 2).permute(2, 0, 1))  # Assuming output is in range [-1, 1]
+            # Display the images
+            plt.figure(figsize=(12, 4))
 
-        # Display the generated image
-        plt.imshow(output_image[0])
-        # plt.title(f"Generated Output - Discriminator Prediction: {fake_pred[0].item()}")
-        plt.title("Generated Output")
-        plt.show()
+            plt.subplot(1, 3, 1)
+            plt.imshow(input_image)
+            plt.title("Input Image")
 
-        print(f"Generated output for sample {i + 1} - Discriminator Prediction: {fake_pred[0].item()}")
+            plt.subplot(1, 3, 2)
+            plt.imshow(generated_image)
+            plt.title("Generated Image")
 
+            plt.subplot(1, 3, 3)
+            plt.imshow(real_image)
+            plt.title("Real Image")
+
+            plt.show()
+        bar.next()
+    bar.finish()
 print("Testing process completed.")
