@@ -14,7 +14,6 @@ from gan.discriminator import ConditionalDiscriminator
 from gan.criterion import GeneratorLoss, DiscriminatorLoss
 from gan.utils import Logger, initialize_weights
 
-
 # Argument parser
 parser = argparse.ArgumentParser(prog='top', description='Train Pix2Pix')
 parser.add_argument("--epochs", type=int, default=200, help="Number of epochs")
@@ -72,8 +71,7 @@ for dataset_name in datasets_to_process:
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         csv_file = open(f'{dataset_name}_{timestamp}_training_log.csv', 'w', newline='')
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['Epoch', ' G Training Loss', 'D Training Loss', 'G Validation Loss', 'D Validation Loss', 'Epoch Time (s)'])
-
+        csv_writer.writerow(['Epoch', 'G Training Loss', 'D Training Loss', 'G Validation Loss', 'D Validation Loss', 'Epoch Time (s)'])
 
     print('Start of training process for', dataset_name, 'dataset!')
     logger = Logger(filename=dataset_name)
@@ -81,38 +79,40 @@ for dataset_name in datasets_to_process:
     # Training loop
     best_val_loss = float('inf')
     epochs_since_improvement = 0
+    patience = 20  # Adjusted patience for early stopping
     for epoch in range(args.epochs):
         generator.train()
         discriminator.train()
-        ge_loss=0.
-        de_loss=0.
+        ge_loss = 0.
+        de_loss = 0.
         start = time.time()
         bar = IncrementalBar(f'[Epoch {epoch+1}/{args.epochs}]', max=len(train_dataloader))
         for x, real in train_dataloader:
             x = x.to(device)
             real = real.to(device)
 
-            # Generator`s loss
+            # Generator's loss
             fake = generator(x)
             fake_pred = discriminator(fake, x)
             g_loss = g_criterion(fake, real, fake_pred)
 
-            # Discriminator`s loss
+            # Discriminator's loss
             fake = generator(x).detach()
             fake_pred = discriminator(fake, x)
             real_pred = discriminator(real, x)
             d_loss = d_criterion(fake_pred, real_pred)
 
-            # Generator`s params update
+            # Generator's params update
             g_optimizer.zero_grad()
             g_loss.backward()
             g_optimizer.step()
 
-            # Discriminator`s params update
+            # Discriminator's params update
             d_optimizer.zero_grad()
             d_loss.backward()
             d_optimizer.step()
-            # add batch losses
+
+            # Add batch losses
             ge_loss += g_loss.item()
             de_loss += d_loss.item()
             bar.next()
@@ -121,50 +121,39 @@ for dataset_name in datasets_to_process:
         # Validation Step
         generator.eval()
         discriminator.eval()
-        ge_val_loss=0.
-        de_val_loss=0.
-        current_val_loss = (ge_val_loss + de_val_loss) / len(val_dataloader)
-        # Early stopping check
-        if current_val_loss < best_val_loss:
-            best_val_loss = current_val_loss
-            epochs_since_improvement = 0
-        else:
-            epochs_since_improvement += 1
-        # Break the training loop if validation loss hasn't improved for 10 epochs
-        if epochs_since_improvement >= 10:
-            print(f"Early stopping triggered after {epoch + 1} epochs due to no improvement in validation loss")
-            break
-
+        ge_val_loss = 0.
+        de_val_loss = 0.
         with torch.no_grad():
             bar = IncrementalBar(f'[Validation]', max=len(val_dataloader))
             for val_x, val_real in val_dataloader:
                 val_x = val_x.to(device)
                 val_real = val_real.to(device)
 
-                # Generator`s loss for validation
+                # Generator's loss for validation
                 val_fake = generator(val_x)
                 val_fake_pred = discriminator(val_fake, val_x)
                 val_g_loss = g_criterion(val_fake, val_real, val_fake_pred)
 
-                # Discriminator`s loss for validation
+                # Discriminator's loss for validation
                 val_fake = generator(val_x).detach()
                 val_fake_pred = discriminator(val_fake, val_x)
                 val_real_pred = discriminator(val_real, val_x)
                 val_d_loss = d_criterion(val_fake_pred, val_real_pred)
 
-                # add batch losses
+                # Add batch losses
                 ge_val_loss += val_g_loss.item()
                 de_val_loss += val_d_loss.item()
                 bar.next()
             bar.finish()
 
-        # obtain per epoch losses for both training and validation
+        # Obtain per epoch losses for both training and validation
         g_loss = ge_loss / len(train_dataloader)
         d_loss = de_loss / len(train_dataloader)
         val_g_loss = ge_val_loss / len(val_dataloader)
         val_d_loss = de_val_loss / len(val_dataloader)
+        current_val_loss = (val_g_loss + val_d_loss) / 2  # Corrected calculation
 
-        # count timeframe
+        # Count timeframe
         end = time.time()
         tm = (end - start)
 
@@ -176,12 +165,22 @@ for dataset_name in datasets_to_process:
         logger.save_weights(generator.state_dict(), 'generator-base')
         logger.save_weights(discriminator.state_dict(), 'discriminator-base')
         if args.csv:
-            csv_writer.writerow([epoch + 1,g_loss, d_loss, val_g_loss, val_d_loss, tm])
+            csv_writer.writerow([epoch + 1, g_loss, d_loss, val_g_loss, val_d_loss, tm])
         print("[Epoch %d/%d] [G loss: %.3f] [D loss: %.3f] [Val G loss: %.3f] [Val D loss: %.3f] ETA: %.3fs"
-            % (epoch + 1, args.epochs, g_loss, d_loss, val_g_loss, val_d_loss, tm))
+              % (epoch + 1, args.epochs, g_loss, d_loss, val_g_loss, val_d_loss, tm))
 
+        # Early stopping check
+        if current_val_loss < best_val_loss:
+            best_val_loss = current_val_loss
+            epochs_since_improvement = 0
+        else:
+            epochs_since_improvement += 1
+        if epochs_since_improvement >= patience:
+            print(f"Early stopping triggered after {epoch + 1} epochs due to no improvement in validation loss")
+            break
 
     logger.close()
     print('End of training process for', dataset_name, 'dataset!')
 
 print('All datasets processed!')
+
