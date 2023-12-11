@@ -4,11 +4,15 @@ from dataset import Cityscapes, Facades, Maps
 from dataset import transforms as T
 from gan.generator import UnetGenerator
 from gan.discriminator import ConditionalDiscriminator
+from gan.criterion import GeneratorLoss, DiscriminatorLoss
 import argparse
 from dataset import Cityscapes, Facades, Maps
 import matplotlib.pyplot as plt
 from progress.bar import IncrementalBar
+import os
+from gan.utils import Logger
 #from PIL import Image
+
 
 # Argument Parser
 parser = argparse.ArgumentParser(prog='top', description='Test Pix2Pix Generator and Discriminator')
@@ -28,6 +32,10 @@ generator.eval()
 discriminator = ConditionalDiscriminator().to(device)
 discriminator.load_state_dict(torch.load(args.discriminator_path))
 discriminator.eval()
+
+# Initialize loss functions
+g_criterion = GeneratorLoss(alpha=100)
+d_criterion = DiscriminatorLoss()
 
 # Original transformation
 transforms = T.Compose([T.Resize((256, 256)),
@@ -50,24 +58,33 @@ else:
     test_dataset = Facades(root='.', transform=transforms, download=False, mode='test')
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
-num_plots = 2
 
-# Generate outputs using the trained generator
+logger = Logger(filename=args.dataset+'_test')
+
+num_plots = 2
+ge_loss=0.
+de_loss=0.
+
+# Generate outputs and using the trained generator and calculate loss
 with torch.no_grad():
     bar = IncrementalBar(f'[Testing ..]', max=len(test_dataloader))
     for i, (x, real) in enumerate(test_dataloader):
         x = x.to(device)
         real = real.to(device)
-        # print("x.size(): ", x.size())
-        # print("real.size(): ", real.size())
 
-        # Generate output
+        # Generate output & loss
         output = generator(x)
-        # print("output.size(): ", output.size())
+        fake_pred = discriminator(output, x)
+        g_loss = g_criterion(output, real, fake_pred)
 
-        # # discriminator (?)
-        # fake_pred = discriminator(output, x)
-        # print("fake_pred.size(): ", fake_pred.size())
+        # Discriminator`s loss
+        output_d = generator(x).detach()
+        fake_pred = discriminator(output_d, x)
+        real_pred = discriminator(real, x)
+        d_loss = d_criterion(fake_pred, real_pred)
+
+        ge_loss += g_loss.item()
+        de_loss += d_loss.item()
 
         # Plot
         if (i < num_plots):
@@ -91,7 +108,20 @@ with torch.no_grad():
             plt.imshow(real_image)
             plt.title("Real Image")
 
+            # Save the images
+            save_dir = 'runs/saved_images/' + args.dataset
+            os.makedirs(save_dir, exist_ok=True)
+            plt.savefig(os.path.join(save_dir, f'image_{i}.png'))
+
             plt.show()
         bar.next()
     bar.finish()
+
+g_loss = ge_loss / len(test_dataloader)
+d_loss = de_loss / len(test_dataloader)
+logger.add_scalar('generator_loss', g_loss, 1)
+logger.add_scalar('discriminator_loss', d_loss, 1)
+logger.close()
+print("[G loss: %.3f] [D loss: %.3f]"
+            % (g_loss, d_loss))
 print("Testing process completed.")

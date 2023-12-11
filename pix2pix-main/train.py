@@ -72,7 +72,7 @@ for dataset_name in datasets_to_process:
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         csv_file = open(f'{dataset_name}_{timestamp}_training_log.csv', 'w', newline='')
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['Epoch', ' G Training Loss', 'D Training Loss', 'G Validation Loss', 'D Validation Loss', 'Epoch Time (s)'])
+        csv_writer.writerow(['Epoch', ' G Training Loss', 'D Training Loss', 'G Validation Loss', 'D Validation Loss', 'Cur Val loss', 'Epoch Time (s)'])
 
 
     print('Start of training process for', dataset_name, 'dataset!')
@@ -82,8 +82,6 @@ for dataset_name in datasets_to_process:
     best_val_loss = float('inf')
     epochs_since_improvement = 0
     for epoch in range(args.epochs):
-        print("len(train_dataloader): ", len(train_dataloader)) #for test
-        print("len(val_dataloader): ",len(val_dataloader)) #for test
         generator.train()
         discriminator.train()
         ge_loss=0.
@@ -163,6 +161,8 @@ for dataset_name in datasets_to_process:
             epochs_since_improvement += 1
 
         # obtain per epoch losses for both training and validation
+        # len(train_dataloader) is the number of train batches when batch size is args.batch_size
+        # len(val_dataloader) is the number of val batches when batch size is args.batch_size
         g_loss = ge_loss / len(train_dataloader)
         d_loss = de_loss / len(train_dataloader)
         val_g_loss = ge_val_loss / len(val_dataloader)
