@@ -77,11 +77,13 @@ for dataset_name in datasets_to_process:
 
     print('Start of training process for', dataset_name, 'dataset!')
     logger = Logger(filename=dataset_name)
-    
+
     # Training loop
     best_val_loss = float('inf')
     epochs_since_improvement = 0
     for epoch in range(args.epochs):
+        print("len(train_dataloader): ", len(train_dataloader)) #for test
+        print("len(val_dataloader): ",len(val_dataloader)) #for test
         generator.train()
         discriminator.train()
         ge_loss=0.
@@ -123,13 +125,7 @@ for dataset_name in datasets_to_process:
         discriminator.eval()
         ge_val_loss=0.
         de_val_loss=0.
-        current_val_loss = (ge_val_loss + de_val_loss) / len(val_dataloader)
-        # Early stopping check
-        if current_val_loss < best_val_loss:
-            best_val_loss = current_val_loss
-            epochs_since_improvement = 0
-        else:
-            epochs_since_improvement += 1
+
         # Break the training loop if validation loss hasn't improved for 10 epochs
         if epochs_since_improvement >= 10:
             print(f"Early stopping triggered after {epoch + 1} epochs due to no improvement in validation loss")
@@ -158,6 +154,14 @@ for dataset_name in datasets_to_process:
                 bar.next()
             bar.finish()
 
+        current_val_loss = (ge_val_loss + de_val_loss) / len(val_dataloader)
+        # Early stopping check
+        if current_val_loss < best_val_loss:
+            best_val_loss = current_val_loss
+            epochs_since_improvement = 0
+        else:
+            epochs_since_improvement += 1
+
         # obtain per epoch losses for both training and validation
         g_loss = ge_loss / len(train_dataloader)
         d_loss = de_loss / len(train_dataloader)
@@ -171,14 +175,14 @@ for dataset_name in datasets_to_process:
         logger.add_scalar('generator_loss', g_loss, epoch+1)
         logger.add_scalar('discriminator_loss', d_loss, epoch+1)
         logger.add_scalar('val_generator_loss', val_g_loss, epoch + 1)
-        logger.add_scalar('val_discriminator_loss', val_d_loss, epoch + 1)
+        logger.add_scalar('current_val_loss', current_val_loss, epoch + 1)
 
         logger.save_weights(generator.state_dict(), 'generator-base')
         logger.save_weights(discriminator.state_dict(), 'discriminator-base')
         if args.csv:
-            csv_writer.writerow([epoch + 1,g_loss, d_loss, val_g_loss, val_d_loss, tm])
-        print("[Epoch %d/%d] [G loss: %.3f] [D loss: %.3f] [Val G loss: %.3f] [Val D loss: %.3f] ETA: %.3fs"
-            % (epoch + 1, args.epochs, g_loss, d_loss, val_g_loss, val_d_loss, tm))
+            csv_writer.writerow([epoch + 1,g_loss, d_loss, val_g_loss, val_d_loss, current_val_loss, tm])
+        print("[Epoch %d/%d] [G loss: %.3f] [D loss: %.3f] [Val G loss: %.3f] [Val D loss: %.3f] [Cur Val loss: %.3f] ETA: %.3fs"
+            % (epoch + 1, args.epochs, g_loss, d_loss, val_g_loss, val_d_loss, current_val_loss, tm))
 
 
     logger.close()
