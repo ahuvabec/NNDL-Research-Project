@@ -20,9 +20,10 @@ class DiscriminatorLoss(nn.Module):
         self.loss_fn = nn.BCEWithLogitsLoss()
         
     def forward(self, fake_pred, real_pred):
-        fake_target = torch.zeros_like(fake_pred)
-        real_target = torch.ones_like(real_pred)
-        fake_loss = self.loss_fn(fake_pred, fake_target)
-        real_loss = self.loss_fn(real_pred, real_target)
+        # takes 2 inputs: generated images and real images
+        fake_target = torch.zeros_like(fake_pred) # zeros because these are the fake generated images
+        real_target = torch.ones_like(real_pred) # ones because these are the real images
+        fake_loss = self.loss_fn(fake_pred, fake_target) # cross entropy loss between generated images and zeros
+        real_loss = self.loss_fn(real_pred, real_target) # cross entropy loss between real images and ones
         loss = (fake_loss + real_loss)/2
         return loss
