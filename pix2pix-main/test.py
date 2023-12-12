@@ -94,16 +94,9 @@ with torch.no_grad():
             # (2) Generator outputs images with pixel values in the range [-1, 1].
             # The +1 operation is a part of the process to bring these values to the non-negative range [0, 2]
             # (3) The / 2 operation is a scaling factor that brings the pixel values into a standard image range of [0, 1].
-            # input_image = inverse_transform(x.squeeze().cpu())
-            # input_image = inverse_transform(x.detach().squeeze().cpu())
             input_image = (x[0].cpu().data.numpy().transpose(1, 2, 0) + 1) / 2
-            # generated_image = inverse_transform(output.squeeze().cpu())
-            # generated_image = inverse_transform(output.detach().squeeze().cpu())
             generated_image = (output[0].cpu().data.numpy().transpose(1, 2, 0) + 1) / 2
-            # real_image = inverse_transform(real.squeeze().cpu())
-            #real_image = inverse_transform(real.detach().squeeze().cpu())
             real_image = (real[0].cpu().data.numpy().transpose(1, 2, 0) + 1) / 2
-
 
             # Display the images
             plt.figure(figsize=(12, 4))
@@ -123,7 +116,7 @@ with torch.no_grad():
             # Save the images
             save_dir = 'runs/saved_images/' + args.dataset
             os.makedirs(save_dir, exist_ok=True)
-            plt.savefig(os.path.join(save_dir, f'image_{i}.png'))
+            plt.savefig(os.path.join(save_dir, f'image_{i+1}.png'))
 
             plt.show()
         bar.next()
