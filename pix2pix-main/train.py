@@ -212,7 +212,7 @@ for dataset_name in datasets_to_process:
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Discriminator Loss', color='blue')
     ax1.tick_params(axis='y', labelcolor='blue')
-    ax1.legend(loc='upper left')
+    #ax1.legend(loc='upper left')
 
     # Create a secondary y-axis for Generator Loss on the right
     ax2 = ax1.twinx()
@@ -220,7 +220,7 @@ for dataset_name in datasets_to_process:
     #ax2.plot(epochs_range, val_generator_losses, label='Validation Generator Loss', linestyle='dashed', color='green')
     ax2.set_ylabel('Generator Loss', color='green')
     ax2.tick_params(axis='y', labelcolor='green')
-    ax2.legend(loc='upper right')
+    #ax2.legend(loc='upper right')
 
     plt.xticks(epochs_range, [int(epoch) for epoch in epochs_range]) # Set x-axis ticks as integer values
     plt.title(f'Train Losses {args.lr} lr')
@@ -241,14 +241,14 @@ for dataset_name in datasets_to_process:
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Discriminator Loss', color='blue')
     ax1.tick_params(axis='y', labelcolor='blue')
-    ax1.legend(loc='upper left')
+    #ax1.legend(loc='upper left')
 
     # Create a secondary y-axis for Generator Loss on the right
     ax2 = ax1.twinx()
     ax2.plot(epochs_range, val_generator_losses, label='Validation Generator Loss', color='green')
     ax2.set_ylabel('Generator Loss', color='green')
     ax2.tick_params(axis='y', labelcolor='green')
-    ax2.legend(loc='upper right')
+    #ax2.legend(loc='upper right')
 
     plt.xticks(epochs_range, [int(epoch) for epoch in epochs_range]) # Set x-axis ticks as integer values
     plt.title(f'Validation Losses {args.lr} lr')
