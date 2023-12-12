@@ -116,8 +116,15 @@ with torch.no_grad():
             # Save the images
             save_dir = 'runs/saved_images/' + args.dataset
             os.makedirs(save_dir, exist_ok=True)
-            plt.savefig(os.path.join(save_dir, f'image_{i+1}.png'))
-
+            # Find the starting index of the dataset name
+            start_index = args.generator_path.find(args.dataset)
+            if (start_index != -1):
+                start_index += len(args.dataset) + 1
+                end_index = args.generator_path.find('_lr', start_index)
+                filename = args.generator_path[start_index:end_index + 3] + '_'
+                plt.savefig(os.path.join(save_dir, f'{filename}image_{i+1}.png'))
+            else:
+                plt.savefig(os.path.join(save_dir, f'image_{i+1}.png'))
             plt.show()
         bar.next()
     bar.finish()
