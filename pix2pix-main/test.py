@@ -17,7 +17,7 @@ from gan.utils import Logger
 # Argument Parser
 parser = argparse.ArgumentParser(prog='top', description='Test Pix2Pix Generator and Discriminator')
 parser.add_argument("--generator_path", type=str, required=True, help="Path to the saved generator weights")
-parser.add_argument("--discriminator_path", type=str, required=True, help="Path to the saved discriminator weights")
+#parser.add_argument("--discriminator_path", type=str, required=True, help="Path to the saved discriminator weights")
 parser.add_argument("--dataset", type=str, default="facades", help="Name of the dataset: ['facades', 'maps', 'cityscapes']")
 args = parser.parse_args()
 
@@ -29,9 +29,9 @@ generator = UnetGenerator().to(device)
 generator.load_state_dict(torch.load(args.generator_path))
 generator.eval()
 
-discriminator = ConditionalDiscriminator().to(device)
-discriminator.load_state_dict(torch.load(args.discriminator_path))
-discriminator.eval()
+# discriminator = ConditionalDiscriminator().to(device)
+# discriminator.load_state_dict(torch.load(args.discriminator_path))
+# discriminator.eval()
 
 # Initialize loss functions
 g_criterion = GeneratorLoss(alpha=100)
@@ -74,17 +74,17 @@ with torch.no_grad():
 
         # Generate output & loss
         output = generator(x)
-        fake_pred = discriminator(output, x)
-        g_loss = g_criterion(output, real, fake_pred)
+        # fake_pred = discriminator(output, x)
+        # g_loss = g_criterion(output, real, fake_pred)
 
-        # Discriminator`s loss
-        output_d = generator(x).detach()
-        fake_pred = discriminator(output_d, x)
-        real_pred = discriminator(real, x)
-        d_loss = d_criterion(fake_pred, real_pred)
-
-        ge_loss += g_loss.item()
-        de_loss += d_loss.item()
+        # # Discriminator`s loss
+        # output_d = generator(x).detach()
+        # fake_pred = discriminator(output_d, x)
+        # real_pred = discriminator(real, x)
+        # d_loss = d_criterion(fake_pred, real_pred)
+        #
+        # ge_loss += g_loss.item()
+        # de_loss += d_loss.item()
 
         # Plot
         if (i < num_plots):
@@ -130,11 +130,11 @@ with torch.no_grad():
         bar.next()
     bar.finish()
 
-g_loss = ge_loss / len(test_dataloader)
-d_loss = de_loss / len(test_dataloader)
-logger.add_scalar('generator_loss', g_loss, 1)
-logger.add_scalar('discriminator_loss', d_loss, 1)
-logger.close()
-print("[G loss: %.3f] [D loss: %.3f]"
-            % (g_loss, d_loss))
+# g_loss = ge_loss / len(test_dataloader)
+# d_loss = de_loss / len(test_dataloader)
+# logger.add_scalar('generator_loss', g_loss, 1)
+# logger.add_scalar('discriminator_loss', d_loss, 1)
+# logger.close()
+# print("[G loss: %.3f] [D loss: %.3f]"
+#             % (g_loss, d_loss))
 print("Testing process completed.")

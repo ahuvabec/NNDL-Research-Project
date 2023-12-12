@@ -6,12 +6,14 @@ import argparse
 from progress.bar import IncrementalBar
 import csv
 import datetime
+import matplotlib.pyplot as plt
+import os
 
 from dataset import Cityscapes, Facades, Maps
 from dataset import transforms as T
 from gan.generator import UnetGenerator
-from gan2d.discriminator import ConditionalDiscriminatorLarge
-from gan2d.discriminator import ConditionalDiscriminatorSmall
+from gan2d.discriminator2d import ConditionalDiscriminatorLarge
+from gan2d.discriminator2d import ConditionalDiscriminatorSmall
 from gan.criterion import GeneratorLoss, DiscriminatorLoss
 from gan.utils import Logger, initialize_weights
 
@@ -198,6 +200,36 @@ for dataset_name in datasets_to_process:
             % (epoch + 1, args.epochs, g_loss, d_loss_large, d_loss_small, tm))
 
     logger.close()
+
+    # Plot the training losses
+    epochs_range = range(1, args.epochs + 1)
+    fig, ax1 = plt.subplots(figsize=(10, 5))
+
+    # Plot Discriminator Loss on the left y-axis
+    ax1.plot(epochs_range, train_discriminator_large_losses, label='Large Discriminator Loss', color='blue')
+    ax1.plot(epochs_range, train_discriminator_small_losses, label='Small Discriminator Loss', linestyle='dashed', color='blue')
+    ax1.set_xlabel('Epochs')
+    ax1.set_ylabel('Discriminator Loss', color='blue')
+    ax1.tick_params(axis='y', labelcolor='blue')
+    ax1.legend(loc='upper left')
+
+    # Create a secondary y-axis for Generator Loss on the right
+    ax2 = ax1.twinx()
+    ax2.plot(epochs_range, train_generator_losses, label='Training Generator Loss', color='green')
+    ax2.set_ylabel('Generator Loss', color='green')
+    ax2.tick_params(axis='y', labelcolor='green')
+    #ax2.legend(loc='upper right')
+
+    # plt.xticks(epochs_range, [int(epoch) for epoch in epochs_range]) # Set x-axis ticks as integer values
+    plt.title(f'{dataset_name} Train Losses {args.lr} lr')
+    plt.legend()
+
+    # Save the plot to a file
+    save_dir = 'runs/plots/' + dataset_name
+    os.makedirs(save_dir, exist_ok=True)
+    plt.savefig(os.path.join(save_dir,f'gan2d_{args.epochs}_epochs_{args.lr}_lr_train_plot.png'))
+    plt.show()
+
     print('End of training process for', dataset_name, 'dataset!')
 
 print('All datasets processed!')
