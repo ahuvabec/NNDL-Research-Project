@@ -142,11 +142,13 @@ class ToImage(Transformer):
     
     def __call__(self, imgA, imgB=None):
         imgA = imgA.permute(1,2,0).numpy()
-        imgA = Image.fromarray(np.uint8(imgA*255))
+        #imgA = Image.fromarray(np.uint8(imgA*255))
+        imgA = Image.fromarray(np.clip(imgA * 255.0, 0, 255).astype(np.uint8)) # ensure pixel values are in the correct range [0, 255]
         if imgB is None:
             return imgA
         imgB = imgB.permute(1,2,0).numpy()
-        imgB = Image.fromarray(np.uint8(imgB*255))
+        #imgB = Image.fromarray(np.uint8(imgB*255))
+        imgB = Image.fromarray(np.clip(imgB * 255.0, 0, 255).astype(np.uint8)) # ensure pixel values are in the correct range [0, 255]
         return imgA, imgB
     
 class Normalize(Transformer):
