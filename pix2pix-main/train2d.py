@@ -224,7 +224,7 @@ for dataset_name in datasets_to_process:
     #ax2.legend(loc='upper right')
 
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True)) # Set x-axis ticks as integer values
-    plt.title(f'GAN2d {dataset_name[0].upper()}{dataset_name[1:]} Train Losses {args.lr} lr')
+    plt.title(f'GAN2d {dataset_name[0].upper()}{dataset_name[1:]} Train Losses {args.lr} lr {args.ld_alpha} ld_alpha')
     plt.legend()
 
     # Save the plot to a file
