@@ -89,9 +89,12 @@ with torch.no_grad():
         # Plot
         if (i < num_plots):
             # Convert tensors back to PIL images
-            input_image = inverse_transform(x.squeeze().cpu())
-            generated_image = inverse_transform(output.squeeze().cpu())
-            real_image = inverse_transform(real.squeeze().cpu())
+            #input_image = inverse_transform(x.squeeze().cpu())
+            input_image = inverse_transform(x.detach().squeeze().cpu())
+            #generated_image = inverse_transform(output.squeeze().cpu())
+            generated_image = inverse_transform(output.detach().squeeze().cpu())
+            #real_image = inverse_transform(real.squeeze().cpu())
+            real_image = inverse_transform(real.detach().squeeze().cpu())
 
             # Display the images
             plt.figure(figsize=(12, 4))
