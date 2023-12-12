@@ -1,18 +1,18 @@
 import torch
 from torch.utils.data import DataLoader
+import argparse
+import matplotlib.pyplot as plt
+from progress.bar import IncrementalBar
+import os
+#from PIL import Image
+
 from dataset import Cityscapes, Facades, Maps
 from dataset import transforms as T
 from gan.generator import UnetGenerator
 from gan.discriminator import ConditionalDiscriminator
 from gan.criterion import GeneratorLoss, DiscriminatorLoss
-import argparse
 from dataset import Cityscapes, Facades, Maps
-import matplotlib.pyplot as plt
-from progress.bar import IncrementalBar
-import os
 from gan.utils import Logger
-#from PIL import Image
-
 
 # Argument Parser
 parser = argparse.ArgumentParser(prog='top', description='Test Pix2Pix Generator and Discriminator')
@@ -89,7 +89,7 @@ with torch.no_grad():
         # Plot
         if (i < num_plots):
 
-            # Convert tensors back to PIL images
+            # Convert tensors back to images
             # (1) Transpose from (3,w,h) to (w,h,w)
             # (2) Generator outputs images with pixel values in the range [-1, 1].
             # The +1 operation is a part of the process to bring these values to the non-negative range [0, 2]

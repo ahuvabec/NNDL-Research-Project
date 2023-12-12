@@ -6,6 +6,7 @@ import argparse
 from progress.bar import IncrementalBar
 import csv
 import datetime
+import matplotlib.pyplot as plt
 
 from dataset import Cityscapes, Facades, Maps
 from dataset import transforms as T
@@ -77,6 +78,12 @@ for dataset_name in datasets_to_process:
 
     print('Start of training process for', dataset_name, 'dataset!')
     logger = Logger(filename=dataset_name)
+
+    # Lists to store losses for plotting
+    train_generator_losses = []
+    train_discriminator_losses = []
+    val_generator_losses = []
+    val_discriminator_losses = []
 
     # Training loop
     best_val_loss = float('inf')
@@ -172,20 +179,44 @@ for dataset_name in datasets_to_process:
         end = time.time()
         tm = (end - start)
 
+        # Append losses to the lists
+        train_generator_losses.append(g_loss)
+        train_discriminator_losses.append(d_loss)
+        val_generator_losses.append(val_g_loss)
+        val_discriminator_losses.append(val_d_loss)
+
         logger.add_scalar('generator_loss', g_loss, epoch+1)
         logger.add_scalar('discriminator_loss', d_loss, epoch+1)
         logger.add_scalar('val_generator_loss', val_g_loss, epoch + 1)
         logger.add_scalar('current_val_loss', current_val_loss, epoch + 1)
 
-        logger.save_weights(generator.state_dict(), 'generator-base')
-        logger.save_weights(discriminator.state_dict(), 'discriminator-base')
+        # Save trained models
+        logger.save_weights(generator.state_dict(), f'{dataset_name}_{args.epochs}_epochs_{args.lr}_lr_generator_base')
+        logger.save_weights(discriminator.state_dict(), f'{dataset_name}_{args.epochs}_epochs_{args.lr}_lr_discriminator_base')
+
         if args.csv:
             csv_writer.writerow([epoch + 1,g_loss, d_loss, val_g_loss, val_d_loss, current_val_loss, tm])
         print("[Epoch %d/%d] [G loss: %.3f] [D loss: %.3f] [Val G loss: %.3f] [Val D loss: %.3f] [Cur Val loss: %.3f] ETA: %.3fs"
             % (epoch + 1, args.epochs, g_loss, d_loss, val_g_loss, val_d_loss, current_val_loss, tm))
 
-
     logger.close()
+
+    print(train_generator_losses)
+
+    # Plot the losses
+    plt.figure(figsize=(10, 5))
+    epochs_range = range(1, args.epochs + 1)
+    plt.plot(epochs_range, train_generator_losses, label='Training Generator Loss')
+    plt.plot(epochs_range, train_discriminator_losses, label='Training Discriminator Loss')
+    plt.plot(epochs_range, val_generator_losses, label='Validation Generator Loss')
+    plt.plot(epochs_range, val_discriminator_losses, label='Validation Discriminator Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Generator and Discriminator Losses')
+    plt.legend()
+    plt.savefig(f'{dataset_name}_{args.epochs}_epochs_{args.lr}_lr_plot.png') # Save the plot to a file
+    plt.show()
+
     print('End of training process for', dataset_name, 'dataset!')
 
 print('All datasets processed!')
