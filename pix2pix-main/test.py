@@ -106,12 +106,13 @@ with torch.no_grad():
             plt.title("Input Image")
 
             plt.subplot(1, 3, 2)
+            plt.imshow(real_image)
+            plt.title("Ground Truth")
+
+            plt.subplot(1, 3, 3)
             plt.imshow(generated_image)
             plt.title("Generated Image")
 
-            plt.subplot(1, 3, 3)
-            plt.imshow(real_image)
-            plt.title("Real Image")
 
             # Save the images
             save_dir = 'runs/saved_images/' + args.dataset
