@@ -7,6 +7,7 @@ from progress.bar import IncrementalBar
 import csv
 import datetime
 import matplotlib.pyplot as plt
+import os
 
 from dataset import Cityscapes, Facades, Maps
 from dataset import transforms as T
@@ -214,7 +215,10 @@ for dataset_name in datasets_to_process:
     plt.ylabel('Loss')
     plt.title('Generator and Discriminator Losses')
     plt.legend()
-    plt.savefig(f'{dataset_name}_{args.epochs}_epochs_{args.lr}_lr_plot.png') # Save the plot to a file
+    # Save the plot to a file
+    save_dir = 'runs/plots/' + dataset_name
+    os.makedirs(save_dir, exist_ok=True)
+    plt.savefig(os.path.join(save_dir,f'{args.epochs}_epochs_{args.lr}_lr_plot.png'))
     plt.show()
 
     print('End of training process for', dataset_name, 'dataset!')
