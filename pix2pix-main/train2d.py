@@ -7,6 +7,7 @@ from progress.bar import IncrementalBar
 import csv
 import datetime
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import os
 
 from dataset import Cityscapes, Facades, Maps
@@ -25,6 +26,7 @@ parser.add_argument("--dataset", type=str, default="facades", help="Name of the 
 parser.add_argument("--batch_size", type=int, default=1, help="Size of the batches")
 parser.add_argument("--lr", type=float, default=0.0002, help="Adams learning rate")
 parser.add_argument("--csv", action='store_true', help="Enable CSV logging")
+parser.add_argument("--ld_alpha", type=float, default=0.5, help="Alpha weight for large discriminator")
 args = parser.parse_args()
 
 device = ('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -108,7 +110,8 @@ for dataset_name in datasets_to_process:
             fake_pred_small = discriminatorS(fake, x)
             g_loss_large = g_criterion(fake, real, fake_pred_large)
             g_loss_small = g_criterion(fake, real, fake_pred_small)
-            g_loss = (g_loss_large + g_loss_small) / 2 # maybe add it later as a hyperparameter
+            #g_loss = (g_loss_large + g_loss_small) / 2 # maybe add it later as a hyperparameter
+            g_loss = args.ld_alpha*(g_loss_large) + (1-args.ld_alpha)*g_loss_small
 
             # Discriminator`s loss
             fake = generator(x).detach()
@@ -221,7 +224,8 @@ for dataset_name in datasets_to_process:
     #ax2.legend(loc='upper right')
 
     # plt.xticks(epochs_range, [int(epoch) for epoch in epochs_range]) # Set x-axis ticks as integer values
-    plt.title(f'{dataset_name} Train Losses {args.lr} lr')
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+    plt.title(f'GAN2d {dataset_name[0].upper()}{dataset_name[1:]} Train Losses {args.lr} lr')
     plt.legend()
 
     # Save the plot to a file

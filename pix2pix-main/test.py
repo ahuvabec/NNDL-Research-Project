@@ -62,8 +62,8 @@ test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 logger = Logger(filename=args.dataset+'_test')
 
 num_plots = 2
-ge_loss=0.
-de_loss=0.
+# ge_loss=0.
+# de_loss=0.
 
 # Generate outputs and using the trained generator and calculate loss
 with torch.no_grad():
