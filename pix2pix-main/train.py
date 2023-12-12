@@ -224,7 +224,7 @@ for dataset_name in datasets_to_process:
 
     plt.xticks(epochs_range, [int(epoch) for epoch in epochs_range]) # Set x-axis ticks as integer values
     plt.title(f'Train Losses {args.lr} lr')
-    plt.legend()
+    #plt.legend()
 
     # Save the plot to a file
     save_dir = 'runs/plots/' + dataset_name
@@ -252,7 +252,7 @@ for dataset_name in datasets_to_process:
 
     plt.xticks(epochs_range, [int(epoch) for epoch in epochs_range]) # Set x-axis ticks as integer values
     plt.title(f'Validation Losses {args.lr} lr')
-    plt.legend()
+    #plt.legend()
 
     # Save the plot to a file
     save_dir = 'runs/plots/' + dataset_name
