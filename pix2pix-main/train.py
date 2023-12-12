@@ -7,6 +7,7 @@ from progress.bar import IncrementalBar
 import csv
 import datetime
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import os
 
 from dataset import Cityscapes, Facades, Maps
@@ -222,8 +223,8 @@ for dataset_name in datasets_to_process:
     ax2.tick_params(axis='y', labelcolor='green')
     #ax2.legend(loc='upper right')
 
-    plt.xticks(epochs_range, [int(epoch) for epoch in epochs_range]) # Set x-axis ticks as integer values
-    plt.title(f'Train Losses {args.lr} lr')
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True)) # Set x-axis ticks as integer values
+    plt.title(f'{dataset_name[0].upper()}{dataset_name[1:]} Train Losses {args.lr} lr')
     #plt.legend()
 
     # Save the plot to a file
@@ -250,8 +251,8 @@ for dataset_name in datasets_to_process:
     ax2.tick_params(axis='y', labelcolor='green')
     #ax2.legend(loc='upper right')
 
-    plt.xticks(epochs_range, [int(epoch) for epoch in epochs_range]) # Set x-axis ticks as integer values
-    plt.title(f'Validation Losses {args.lr} lr')
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True)) # Set x-axis ticks as integer values
+    plt.title(f'{dataset_name[0].upper()}{dataset_name[1:]} Validation Losses {args.lr} lr')
     #plt.legend()
 
     # Save the plot to a file
