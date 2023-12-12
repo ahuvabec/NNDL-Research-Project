@@ -225,9 +225,9 @@ for dataset_name in datasets_to_process:
     ax2.tick_params(axis='y', labelcolor='green')
     ax2.legend(loc='upper right')
 
-    plt.plot(epochs_range, train_generator_losses, label='Training Generator Loss')
-    # plt.plot(epochs_range, train_discriminator_losses, label='Training Discriminator Loss')
-    plt.plot(epochs_range, val_generator_losses, label='Validation Generator Loss')
+    # plt.plot(epochs_range, train_generator_losses, label='Training Generator Loss')
+    # # plt.plot(epochs_range, train_discriminator_losses, label='Training Discriminator Loss')
+    # plt.plot(epochs_range, val_generator_losses, label='Validation Generator Loss')
     # plt.plot(epochs_range, val_discriminator_losses, label='Validation Discriminator Loss')
 
     plt.xticks(epochs_range, [int(epoch) for epoch in epochs_range]) # Set x-axis ticks as integer values
