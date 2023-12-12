@@ -125,9 +125,9 @@ for dataset_name in datasets_to_process:
         de_val_loss=0.
 
         # Break the training loop if validation loss hasn't improved for 10 epochs
-        if epochs_since_improvement >= 10:
-            print(f"Early stopping triggered after {epoch + 1} epochs due to no improvement in validation loss")
-            break
+        # if epochs_since_improvement >= 10:
+        #    print(f"Early stopping triggered after {epoch + 1} epochs due to no improvement in validation loss")
+        #    break
 
         with torch.no_grad():
             bar = IncrementalBar(f'[Validation]', max=len(val_dataloader))
