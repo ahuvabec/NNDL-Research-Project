@@ -50,10 +50,10 @@ inverse_transform = T.Compose([
 # Choose the appropriate dataset based on the training dataset (should be downloaded already)
 # datasets
 print(f'Accessing "{args.dataset.upper()}" dataset!')
-if args.dataset == 'cityscapes':
-    test_dataset = Cityscapes(root='.', transform=transforms, download=False, mode='test')
-elif args.dataset == 'maps':
-    test_dataset = Maps(root='.', transform=transforms, download=False, mode='test')
+if args.dataset == 'cityscapes': # dataset have train and val  only
+    test_dataset = Cityscapes(root='.', transform=transforms, download=False, mode='val')
+elif args.dataset == 'maps': # dataset have train and val  only
+    test_dataset = Maps(root='.', transform=transforms, download=False, mode='val')
 else:
     test_dataset = Facades(root='.', transform=transforms, download=False, mode='test')
 test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
