@@ -10,8 +10,8 @@ import datetime
 from dataset import Cityscapes, Facades, Maps
 from dataset import transforms as T
 from gan.generator import UnetGenerator
-from gan.discriminator import ConditionalDiscriminatorLarge
-from gan.discriminator import ConditionalDiscriminatorSmall
+from gan2d.discriminator import ConditionalDiscriminatorLarge
+from gan2d.discriminator import ConditionalDiscriminatorSmall
 from gan.criterion import GeneratorLoss, DiscriminatorLoss
 from gan.utils import Logger, initialize_weights
 
@@ -75,11 +75,16 @@ for dataset_name in datasets_to_process:
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         csv_file = open(f'{dataset_name}_{timestamp}_training_log.csv', 'w', newline='')
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['Epoch', ' G Training Loss', 'D Training Loss', 'G Validation Loss', 'D Validation Loss', 'Epoch Time (s)'])
+        csv_writer.writerow(['Epoch', ' G Training Loss', 'D L Training Loss', 'D S Training Loss', 'Epoch Time (s)'])
 
 
     print('Start of training process for', dataset_name, 'dataset!')
     logger = Logger(filename=dataset_name)
+
+    # Lists to store losses for plotting
+    train_generator_losses = []
+    train_discriminator_large_losses = []
+    train_discriminator_small_losses = []
     
     # Training loop
     for epoch in range(args.epochs):
@@ -101,7 +106,7 @@ for dataset_name in datasets_to_process:
             fake_pred_small = discriminatorS(fake, x)
             g_loss_large = g_criterion(fake, real, fake_pred_large)
             g_loss_small = g_criterion(fake, real, fake_pred_small)
-            g_loss = (g_loss_large + g_loss_small) / 2
+            g_loss = (g_loss_large + g_loss_small) / 2 # maybe add it later as a hyperparameter
 
             # Discriminator`s loss
             fake = generator(x).detach()
@@ -131,56 +136,66 @@ for dataset_name in datasets_to_process:
             bar.next()
         bar.finish()
 
-        # Validation Step
-        generator.eval()
-        discriminator.eval()
-        ge_val_loss=0.
-        de_val_loss=0.
-        with torch.no_grad():
-            bar = IncrementalBar(f'[Validation]', max=len(val_dataloader))
-            for val_x, val_real in val_dataloader:
-                val_x = val_x.to(device)
-                val_real = val_real.to(device)
-
-                # Generator`s loss for validation
-                val_fake = generator(val_x)
-                val_fake_pred = discriminator(val_fake, val_x)
-                val_g_loss = g_criterion(val_fake, val_real, val_fake_pred)
-
-                # Discriminator`s loss for validation
-                val_fake = generator(val_x).detach()
-                val_fake_pred = discriminator(val_fake, val_x)
-                val_real_pred = discriminator(val_real, val_x)
-                val_d_loss = d_criterion(val_fake_pred, val_real_pred)
-
-                # add batch losses
-                ge_val_loss += val_g_loss.item()
-                de_val_loss += val_d_loss.item()
-                bar.next()
-            bar.finish()
+        # Ignoring Val for now
+        # # Validation Step
+        # generator.eval()
+        # discriminator.eval()
+        # ge_val_loss=0.
+        # de_val_loss=0.
+        # with torch.no_grad():
+        #     bar = IncrementalBar(f'[Validation]', max=len(val_dataloader))
+        #     for val_x, val_real in val_dataloader:
+        #         val_x = val_x.to(device)
+        #         val_real = val_real.to(device)
+        #
+        #         # Generator`s loss for validation
+        #         val_fake = generator(val_x)
+        #         val_fake_pred = discriminator(val_fake, val_x)
+        #         val_g_loss = g_criterion(val_fake, val_real, val_fake_pred)
+        #
+        #         # Discriminator`s loss for validation
+        #         val_fake = generator(val_x).detach()
+        #         val_fake_pred = discriminator(val_fake, val_x)
+        #         val_real_pred = discriminator(val_real, val_x)
+        #         val_d_loss = d_criterion(val_fake_pred, val_real_pred)
+        #
+        #         # add batch losses
+        #         ge_val_loss += val_g_loss.item()
+        #         de_val_loss += val_d_loss.item()
+        #         bar.next()
+        #     bar.finish()
 
         # obtain per epoch losses for both training and validation
         g_loss = ge_loss / len(train_dataloader)
-        d_loss = de_loss / len(train_dataloader)
-        val_g_loss = ge_val_loss / len(val_dataloader)
-        val_d_loss = de_val_loss / len(val_dataloader)
+        d_loss_large = de_loss_large / len(train_dataloader)
+        d_loss_small = de_loss_small / len(train_dataloader)
+        # val_g_loss = ge_val_loss / len(val_dataloader)
+        # val_d_loss = de_val_loss / len(val_dataloader)
 
         # count timeframe
         end = time.time()
         tm = (end - start)
 
+        # Append losses to the lists
+        train_generator_losses.append(g_loss)
+        train_discriminator_large_losses.append(d_loss_large)
+        train_discriminator_small_losses.append(d_loss_small)
+
         logger.add_scalar('generator_loss', g_loss, epoch+1)
-        logger.add_scalar('discriminator_loss', d_loss, epoch+1)
-        logger.add_scalar('val_generator_loss', val_g_loss, epoch + 1)
-        logger.add_scalar('val_discriminator_loss', val_d_loss, epoch + 1)
+        logger.add_scalar('discriminator_large_loss', d_loss_large, epoch+1)
+        logger.add_scalar('discriminator_small_loss', d_loss_small, epoch+1)
+        # logger.add_scalar('val_generator_loss', val_g_loss, epoch + 1)
+        # logger.add_scalar('val_discriminator_loss', val_d_loss, epoch + 1)
 
-        logger.save_weights(generator.state_dict(), 'generator-base')
-        logger.save_weights(discriminator.state_dict(), 'discriminator-base')
+        # Save trained models
+        logger.save_weights(generator.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.lr}_lr_generator_base')
+        logger.save_weights(discriminatorL.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.lr}_lr_discriminatorL_base_')
+        logger.save_weights(discriminatorS.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.lr}_lr_discriminatorS_base_')
+
         if args.csv:
-            csv_writer.writerow([epoch + 1,g_loss, d_loss, val_g_loss, val_d_loss, tm])
-        print("[Epoch %d/%d] [G loss: %.3f] [D loss: %.3f] [Val G loss: %.3f] [Val D loss: %.3f] ETA: %.3fs"
-            % (epoch + 1, args.epochs, g_loss, d_loss, val_g_loss, val_d_loss, tm))
-
+            csv_writer.writerow([epoch + 1,g_loss, d_loss_large, d_loss_small, tm])
+        print("[Epoch %d/%d] [G loss: %.3f] [D loss large: %.3f] [D loss small: %.3f] ETA: %.3fs"
+            % (epoch + 1, args.epochs, g_loss, d_loss_large, d_loss_small, tm))
 
     logger.close()
     print('End of training process for', dataset_name, 'dataset!')
