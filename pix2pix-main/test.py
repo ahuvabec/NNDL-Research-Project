@@ -62,7 +62,8 @@ test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 logger = Logger(filename=args.dataset+'_test')
 
-num_plots = min(args.num_imgs, len(test_dataloader))
+num_imgs = min(args.num_imgs, len(test_dataloader))
+num_show = 2
 # ge_loss=0.
 # de_loss=0.
 
@@ -88,7 +89,7 @@ with torch.no_grad():
         # de_loss += d_loss.item()
 
         # Plot
-        if (i < num_plots):
+        if (i < num_imgs):
 
             # Convert tensors back to images
             # (1) Transpose from (3,w,h) to (w,h,w)
@@ -130,7 +131,9 @@ with torch.no_grad():
                 save_dir = save_dir + model_params
             os.makedirs(save_dir, exist_ok=True)
             plt.savefig(os.path.join(save_dir, f'{args.dataset}_image_{i+1}.png'))
-            plt.show()
+
+            if i < num_show:
+                plt.show()
 
             # Save singular imags for calculating FID scores
 
