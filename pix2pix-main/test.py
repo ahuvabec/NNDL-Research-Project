@@ -122,11 +122,10 @@ with torch.no_grad():
                 start_index += len(args.dataset) + 1
                 if (args.generator_path.find('gan2d') != -1):
                     end_index = args.generator_path.find('_ld_alpha', start_index)
-                    model_params = 'gan2d_' + args.generator_path[start_index:end_index + 9] + '_'
+                    model_params = 'gan2d_' + args.generator_path[start_index:end_index + 9]
                 else:
                     end_index = args.generator_path.find('_lr', start_index)
-                    model_params = args.generator_path[start_index:end_index + 3] + '_'
-                print("params:", model_params)
+                    model_params = args.generator_path[start_index:end_index + 3]
                 save_dir = save_dir + model_params
                 print("save_dir:", save_dir)
             os.makedirs(save_dir, exist_ok=True)
