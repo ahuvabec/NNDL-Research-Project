@@ -193,8 +193,8 @@ for dataset_name in datasets_to_process:
         logger.add_scalar('current_val_loss', current_val_loss, epoch + 1)
 
         # Save trained models
-        logger.save_weights(generator.state_dict(), f'{dataset_name}_{args.epochs}_epochs_{args.lr}_lr_generator_base')
-        logger.save_weights(discriminator.state_dict(), f'{dataset_name}_{args.epochs}_epochs_{args.lr}_lr_discriminator_base')
+        logger.save_weights(generator.state_dict(), f'{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_generator_base')
+        logger.save_weights(discriminator.state_dict(), f'{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_discriminator_base')
 
         if args.csv:
             csv_writer.writerow([epoch + 1,g_loss, d_loss, val_g_loss, val_d_loss, current_val_loss, tm])
@@ -224,13 +224,13 @@ for dataset_name in datasets_to_process:
     #ax2.legend(loc='upper right')
 
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True)) # Set x-axis ticks as integer values
-    plt.title(f'{dataset_name[0].upper()}{dataset_name[1:]} Train Losses ({args.lr} lr)')
+    plt.title(f'{dataset_name[0].upper()}{dataset_name[1:]} Train Losses ({args.batch_size}_bs, {args.lr} lr)')
     #plt.legend()
 
     # Save the plot to a file
     save_dir = 'runs/plots/' + dataset_name
     os.makedirs(save_dir, exist_ok=True)
-    plt.savefig(os.path.join(save_dir,f'{args.epochs}_epochs_{args.lr}_lr_train_plot.png'))
+    plt.savefig(os.path.join(save_dir,f'{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_train_plot.png'))
     plt.show()
 
     # Plot the val losses
@@ -252,13 +252,13 @@ for dataset_name in datasets_to_process:
     #ax2.legend(loc='upper right')
 
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True)) # Set x-axis ticks as integer values
-    plt.title(f'{dataset_name[0].upper()}{dataset_name[1:]} Validation Losses ({args.lr} lr)')
+    plt.title(f'{dataset_name[0].upper()}{dataset_name[1:]} Validation Losses ({args.batch_size}_bs, {args.lr} lr)')
     #plt.legend()
 
     # Save the plot to a file
     save_dir = 'runs/plots/' + dataset_name
     os.makedirs(save_dir, exist_ok=True)
-    plt.savefig(os.path.join(save_dir,f'{args.epochs}_epochs_{args.lr}_lr_val_plot.png'))
+    plt.savefig(os.path.join(save_dir,f'{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_val_plot.png'))
     plt.show()
 
     print('End of training process for', dataset_name, 'dataset!')

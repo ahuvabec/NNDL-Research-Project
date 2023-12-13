@@ -114,25 +114,23 @@ with torch.no_grad():
             plt.title("Generated Image")
 
 
-            # Save the images
-            save_dir = 'runs/saved_images/' + args.dataset
-            os.makedirs(save_dir, exist_ok=True)
+            # Save the images in model params directories
+            save_dir = 'runs/saved_images/'
             # Find the starting index of the dataset name
             start_index = args.generator_path.find(args.dataset)
             if (start_index != -1):
                 start_index += len(args.dataset) + 1
                 if (args.generator_path.find('gan2d') != -1):
-                    print("found gan2d")
                     end_index = args.generator_path.find('_ld_alpha', start_index)
-                    filename = 'gan2d_' + args.generator_path[start_index:end_index + 9] + '_'
+                    model_params = 'gan2d_' + args.generator_path[start_index:end_index + 9] + '_'
                 else:
                     end_index = args.generator_path.find('_lr', start_index)
-                    filename = args.generator_path[start_index:end_index + 3] + '_'
-                print("s:",start_index,"e:",end_index)
-                print(filename)
-                plt.savefig(os.path.join(save_dir, f'{filename}image_{i+1}.png'))
-            else:
-                plt.savefig(os.path.join(save_dir, f'image_{i+1}.png'))
+                    model_params = args.generator_path[start_index:end_index + 3] + '_'
+                print("params:", model_params)
+                save_dir = save_dir + model_params
+                print("save_dir:", save_dir)
+            os.makedirs(save_dir, exist_ok=True)
+            plt.savefig(os.path.join(save_dir, f'{args.dataset}_image_{i+1}.png'))
             plt.show()
         bar.next()
     bar.finish()
