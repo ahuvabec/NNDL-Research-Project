@@ -121,7 +121,7 @@ with torch.no_grad():
             start_index = args.generator_path.find(args.dataset)
             if (start_index != -1):
                 start_index += len(args.dataset) + 1
-                if (args.generator_path.find('gan2d')):
+                if (args.generator_path.find('gan2d') != -1):
                     print("found gan2d")
                     end_index = args.generator_path.find('_ld_alpha', start_index)
                     filename = 'gan2d_' + args.generator_path[start_index:end_index + 9] + '_'
