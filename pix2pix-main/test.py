@@ -134,6 +134,7 @@ with torch.no_grad():
 
             if i < num_show:
                 plt.show()
+            plt.close()
 
             # Save singular imags for calculating FID scores
 
