@@ -122,11 +122,14 @@ with torch.no_grad():
             if (start_index != -1):
                 start_index += len(args.dataset) + 1
                 if (args.generator_path.find('gan2d')):
+                    print("found gan2d")
                     end_index = args.generator_path.find('_ld_alpha', start_index)
                     filename = 'gan2d_' + args.generator_path[start_index:end_index + 9] + '_'
                 else:
                     end_index = args.generator_path.find('_lr', start_index)
                     filename = args.generator_path[start_index:end_index + 3] + '_'
+                print("s:",start_index,"e:",end_index)
+                print(filename)
                 plt.savefig(os.path.join(save_dir, f'{filename}image_{i+1}.png'))
             else:
                 plt.savefig(os.path.join(save_dir, f'image_{i+1}.png'))
