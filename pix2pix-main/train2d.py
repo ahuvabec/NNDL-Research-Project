@@ -83,7 +83,7 @@ for dataset_name in datasets_to_process:
 
 
     print('Start of training process for', dataset_name, 'dataset!')
-    logger = Logger(filename=dataset_name)
+    logger = Logger(filename=f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_{args.ld_alpha}_ld_alpha')
 
     # Lists to store losses for plotting
     train_generator_losses = []

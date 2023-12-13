@@ -20,12 +20,14 @@ class Logger():
         self.cache={}
         if not os.path.exists(exp_name):
             os.makedirs(exp_name, exist_ok=True)
+        if not os.path.exists(exp_name + '/JSONs'):
+            os.makedirs(exp_name+'/JSONs', exist_ok=True)
         self.date=datetime.today().strftime("%B_%d_%Y_%I_%M%p")
         if filename is None:
             self.filename=self.date
         else:
             self.filename="_".join([self.date, filename])
-        fpath = f"{self.exp_name}/{self.filename}.json"
+        fpath = f"{self.exp_name}/JSONs/{self.filename}.json"
         with open(fpath, 'w') as f:
             data = json.dumps(self.cache)
             f.write(data)
@@ -44,14 +46,14 @@ class Logger():
         return None
     
     def update(self,):
-        fpath = f"{self.exp_name}/{self.filename}.json"
+        fpath = f"{self.exp_name}/JSONs/{self.filename}.json"
         with open(fpath, 'w') as f:
             data = json.dumps(self.cache)
             f.write(data)
         return None
     
     def close(self,):
-        fpath = f"{self.exp_name}/{self.filename}.json"
+        fpath = f"{self.exp_name}/JSONs/{self.filename}.json"
         with open(fpath, 'w') as f:
             data = json.dumps(self.cache)
             f.write(data)
