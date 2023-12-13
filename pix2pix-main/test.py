@@ -128,16 +128,15 @@ with torch.no_grad():
                     end_index = args.generator_path.find('_lr', start_index)
                     model_params = args.generator_path[start_index:end_index + 3]
                 save_dir = save_dir + model_params
-                print("save_dir:", save_dir)
             os.makedirs(save_dir, exist_ok=True)
             plt.savefig(os.path.join(save_dir, f'{args.dataset}_image_{i+1}.png'))
             plt.show()
 
             # Save singular imags for calculating FID scores
             # Create Image objects from NumPy arrays
-            input_image = Image.fromarray(input_image)
-            generated_image = Image.fromarray(generated_image)
-            real_image = Image.fromarray(real_image)
+            input_image = Image.fromarray((input_image * 255).astype('uint8'))
+            generated_image = Image.fromarray((generated_image * 255).astype('uint8'))
+            real_image = Image.fromarray((real_image * 255).astype('uint8'))
             # Save the images to files
             input_image.save(os.path.join(save_dir + "/input", f'{args.dataset}_image_{i+1}.png'))
             generated_image.save(os.path.join(save_dir + "/generated", f'{args.dataset}_image_{i+1}.png'))
