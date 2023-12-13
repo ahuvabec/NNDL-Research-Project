@@ -4,7 +4,7 @@ import argparse
 import matplotlib.pyplot as plt
 from progress.bar import IncrementalBar
 import os
-#from PIL import Image
+from PIL import Image
 
 from dataset import Cityscapes, Facades, Maps
 from dataset import transforms as T
@@ -19,6 +19,7 @@ parser = argparse.ArgumentParser(prog='top', description='Test Pix2Pix Generator
 parser.add_argument("--generator_path", type=str, required=True, help="Path to the saved generator weights")
 #parser.add_argument("--discriminator_path", type=str, required=True, help="Path to the saved discriminator weights")
 parser.add_argument("--dataset", type=str, default="facades", help="Name of the dataset: ['facades', 'maps', 'cityscapes']")
+parser.add_argument("--num_imgs", type=int, default="1", help="Num of images to generate (max is the number of imgs in data set)")
 args = parser.parse_args()
 
 # Define the device
@@ -61,7 +62,7 @@ test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 logger = Logger(filename=args.dataset+'_test')
 
-num_plots = 2
+num_plots = min(args.num_imgs, len(test_dataloader))
 # ge_loss=0.
 # de_loss=0.
 
@@ -131,6 +132,17 @@ with torch.no_grad():
             os.makedirs(save_dir, exist_ok=True)
             plt.savefig(os.path.join(save_dir, f'{args.dataset}_image_{i+1}.png'))
             plt.show()
+
+            # Save singular imags for calculating FID scores
+            # Create Image objects from NumPy arrays
+            input_image = Image.fromarray(input_image)
+            generated_image = Image.fromarray(generated_image)
+            real_image = Image.fromarray(real_image)
+            # Save the images to files
+            input_image.save(os.path.join(save_dir + "/input", f'{args.dataset}_image_{i+1}.png'))
+            generated_image.save(os.path.join(save_dir + "/generated", f'{args.dataset}_image_{i+1}.png'))
+            real_image.save(os.path.join(save_dir + "/real", f'{args.dataset}_image_{i+1}.png'))
+
         bar.next()
     bar.finish()
 
