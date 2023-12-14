@@ -200,9 +200,9 @@ for dataset_name in datasets_to_process:
         # logger.add_scalar('val_discriminator_loss', val_d_loss, epoch + 1)
 
         # Save trained models
-        logger.save_weights(generator.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_{args.ld_alpha}_ld_alpha_generator_base')
-        logger.save_weights(discriminatorL.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_discriminatorL_base_')
-        logger.save_weights(discriminatorS.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_discriminatorS_base_')
+        logger.save_weights(generator.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_{args.ld_alpha}_ld_alpha_dynamic_generator_base')
+        logger.save_weights(discriminatorL.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_discriminatorL_dynamic_base_')
+        logger.save_weights(discriminatorS.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_discriminatorS_dynamic_base_')
 
         if args.csv:
             csv_writer.writerow([epoch + 1,g_loss, d_loss_large, d_loss_small, tm])
@@ -216,7 +216,7 @@ for dataset_name in datasets_to_process:
     fig, ax1 = plt.subplots(figsize=(10, 5))
 
     # Plot Discriminator Loss on the left y-axis
-    ax1.plot(epochs_range, train_discriminator_large_losses, label='Large Discriminator Loss', color='blue')
+    ax1.plot(epochs_range, train_discriminator_large_losses, label='Large Discriminator Loss'
     ax1.plot(epochs_range, train_discriminator_small_losses, label='Small Discriminator Loss', linestyle='dashed', color='blue')
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Discriminator Loss', color='blue')
@@ -231,7 +231,7 @@ for dataset_name in datasets_to_process:
     #ax2.legend(loc='upper right')
 
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True)) # Set x-axis ticks as integer values
-    plt.title(f'GAN2d {dataset_name[0].upper()}{dataset_name[1:]} Train Losses ({args.batch_size} bs, {args.lr} lr, {args.ld_alpha} ld_alpha)')
+    plt.title(f'GAN2d_dynamic {dataset_name[0].upper()}{dataset_name[1:]} Train Losses ({args.batch_size} bs, {args.lr} lr, {args.ld_alpha} ld_alpha)')
     plt.legend()
 
     # Save the plot to a file
