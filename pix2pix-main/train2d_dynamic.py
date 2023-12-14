@@ -92,7 +92,7 @@ for dataset_name in datasets_to_process:
 
     #variable for dynamic alpha
     dynamic = 0
-    
+
     # Training loop
     for epoch in range(args.epochs):
         generator.train()
@@ -103,10 +103,10 @@ for dataset_name in datasets_to_process:
         de_loss_small = 0.0  # Small discriminator loss
         start = time.time()
         bar = IncrementalBar(f'[Epoch {epoch+1}/{args.epochs}]', max=len(train_dataloader))
-        
+
         if epoch % 10 == 0:
             dynamic += 1
-        
+
         for x, real in train_dataloader:
             x = x.to(device)
             real = real.to(device)
@@ -117,8 +117,11 @@ for dataset_name in datasets_to_process:
             fake_pred_small = discriminatorS(fake, x)
             g_loss_large = g_criterion(fake, real, fake_pred_large)
             g_loss_small = g_criterion(fake, real, fake_pred_small)
-            #g_loss = (g_loss_large + g_loss_small) / 2 # maybe add it later as a hyperparameter
-            g_loss = (args.ld_alpha)**(dynamic)*(g_loss_large) + (1-args.ld_alpha)**(dynamic)*g_loss_small
+            # g_loss = (args.ld_alpha)**(dynamic)*(g_loss_large) + (1-args.ld_alpha)**(dynamic)*g_loss_small
+            g_loss = (args.ld_alpha)**(dynamic)*(g_loss_large) + (1-args.ld_alpha**(dynamic))*g_loss_small
+            if epoch % 10 == 0:
+                print(f'old: weight_small={(args.ld_alpha)**(dynamic)} weight_large={(1-args.ld_alpha)**(dynamic)}')
+                print(f'new: weight_small={(args.ld_alpha)**(dynamic)} weight_large={(1-args.ld_alpha**(dynamic))}')
 
             # Discriminator`s loss
             fake = generator(x).detach()
