@@ -219,7 +219,7 @@ for dataset_name in datasets_to_process:
     fig, ax1 = plt.subplots(figsize=(10, 5))
 
     # Plot Discriminator Loss on the left y-axis
-    ax1.plot(epochs_range, train_discriminator_large_losses, label='Large Discriminator Loss'
+    ax1.plot(epochs_range, train_discriminator_large_losses, label='Large Discriminator Loss')
     ax1.plot(epochs_range, train_discriminator_small_losses, label='Small Discriminator Loss', linestyle='dashed', color='blue')
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Discriminator Loss', color='blue')
