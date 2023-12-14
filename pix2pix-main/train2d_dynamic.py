@@ -90,8 +90,8 @@ for dataset_name in datasets_to_process:
     train_discriminator_large_losses = []
     train_discriminator_small_losses = []
 
-    #variable for dynamic alpha
-    dynamic = 0
+    # variable for dynamic alpha, start from -1 so first power is 0
+    dynamic = -1
 
     # Training loop
     for epoch in range(args.epochs):
@@ -101,11 +101,14 @@ for dataset_name in datasets_to_process:
         ge_loss=0.0
         de_loss_large = 0.0  # Large discriminator loss
         de_loss_small = 0.0  # Small discriminator loss
-        start = time.time()
-        bar = IncrementalBar(f'[Epoch {epoch+1}/{args.epochs}]', max=len(train_dataloader))
 
         if epoch % 10 == 0:
             dynamic += 1
+            print(f'old: weight_small={(args.ld_alpha)**(dynamic)} weight_large={(1-args.ld_alpha)**(dynamic)}')
+            print(f'new: weight_small={(args.ld_alpha)**(dynamic)} weight_large={(1-args.ld_alpha**(dynamic))}')
+
+        start = time.time()
+        bar = IncrementalBar(f'[Epoch {epoch+1}/{args.epochs}]', max=len(train_dataloader))
 
         for x, real in train_dataloader:
             x = x.to(device)
@@ -119,9 +122,6 @@ for dataset_name in datasets_to_process:
             g_loss_small = g_criterion(fake, real, fake_pred_small)
             # g_loss = (args.ld_alpha)**(dynamic)*(g_loss_large) + (1-args.ld_alpha)**(dynamic)*g_loss_small
             g_loss = (args.ld_alpha)**(dynamic)*(g_loss_large) + (1-args.ld_alpha**(dynamic))*g_loss_small
-            if epoch % 10 == 0:
-                print(f'old: weight_small={(args.ld_alpha)**(dynamic)} weight_large={(1-args.ld_alpha)**(dynamic)}')
-                print(f'new: weight_small={(args.ld_alpha)**(dynamic)} weight_large={(1-args.ld_alpha**(dynamic))}')
 
             # Discriminator`s loss
             fake = generator(x).detach()
@@ -151,41 +151,10 @@ for dataset_name in datasets_to_process:
             bar.next()
         bar.finish()
 
-        # Ignoring Val for now
-        # # Validation Step
-        # generator.eval()
-        # discriminator.eval()
-        # ge_val_loss=0.
-        # de_val_loss=0.
-        # with torch.no_grad():
-        #     bar = IncrementalBar(f'[Validation]', max=len(val_dataloader))
-        #     for val_x, val_real in val_dataloader:
-        #         val_x = val_x.to(device)
-        #         val_real = val_real.to(device)
-        #
-        #         # Generator`s loss for validation
-        #         val_fake = generator(val_x)
-        #         val_fake_pred = discriminator(val_fake, val_x)
-        #         val_g_loss = g_criterion(val_fake, val_real, val_fake_pred)
-        #
-        #         # Discriminator`s loss for validation
-        #         val_fake = generator(val_x).detach()
-        #         val_fake_pred = discriminator(val_fake, val_x)
-        #         val_real_pred = discriminator(val_real, val_x)
-        #         val_d_loss = d_criterion(val_fake_pred, val_real_pred)
-        #
-        #         # add batch losses
-        #         ge_val_loss += val_g_loss.item()
-        #         de_val_loss += val_d_loss.item()
-        #         bar.next()
-        #     bar.finish()
-
         # obtain per epoch losses for both training and validation
         g_loss = ge_loss / len(train_dataloader)
         d_loss_large = de_loss_large / len(train_dataloader)
         d_loss_small = de_loss_small / len(train_dataloader)
-        # val_g_loss = ge_val_loss / len(val_dataloader)
-        # val_d_loss = de_val_loss / len(val_dataloader)
 
         # count timeframe
         end = time.time()
