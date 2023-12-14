@@ -102,10 +102,9 @@ for dataset_name in datasets_to_process:
         de_loss_large = 0.0  # Large discriminator loss
         de_loss_small = 0.0  # Small discriminator loss
 
-        if epoch % 10 == 0:
+        if epoch % int(args.epochs/5) == 0:
             dynamic += 1
-            print(f'old: weight_small={(args.ld_alpha)**(dynamic)} weight_large={(1-args.ld_alpha)**(dynamic)}')
-            print(f'new: weight_small={(args.ld_alpha)**(dynamic)} weight_large={(1-args.ld_alpha**(dynamic))}')
+            print(f'large_discriminator_weight={(args.ld_alpha)**(dynamic)} small_discriminator_weight={(1-args.ld_alpha**(dynamic))}')
 
         start = time.time()
         bar = IncrementalBar(f'[Epoch {epoch+1}/{args.epochs}]', max=len(train_dataloader))
