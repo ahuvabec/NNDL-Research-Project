@@ -83,7 +83,7 @@ for dataset_name in datasets_to_process:
 
 
     print('Start of training process for', dataset_name, 'dataset!')
-    logger = Logger(filename=f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_{args.ld_alpha}_ld_alpha')
+    logger = Logger(filename=f'gan2d_dynamic_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_{args.ld_alpha}_ld_alpha')
 
     # Lists to store losses for plotting
     train_generator_losses = []
@@ -203,9 +203,9 @@ for dataset_name in datasets_to_process:
         # logger.add_scalar('val_discriminator_loss', val_d_loss, epoch + 1)
 
         # Save trained models
-        logger.save_weights(generator.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_{args.ld_alpha}_ld_alpha_dynamic_generator_base')
-        logger.save_weights(discriminatorL.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_discriminatorL_dynamic_base_')
-        logger.save_weights(discriminatorS.state_dict(), f'gan2d_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_discriminatorS_dynamic_base_')
+        logger.save_weights(generator.state_dict(), f'gan2d_dynamic_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_{args.ld_alpha}_ld_alpha_generator')
+        logger.save_weights(discriminatorL.state_dict(), f'gan2d_dynamic_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_discriminatorL')
+        logger.save_weights(discriminatorS.state_dict(), f'gan2d_dynamic_{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_discriminatorS')
 
         if args.csv:
             csv_writer.writerow([epoch + 1,g_loss, d_loss_large, d_loss_small, tm])
@@ -234,13 +234,13 @@ for dataset_name in datasets_to_process:
     #ax2.legend(loc='upper right')
 
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True)) # Set x-axis ticks as integer values
-    plt.title(f'GAN2d_dynamic {dataset_name[0].upper()}{dataset_name[1:]} Train Losses ({args.batch_size} bs, {args.lr} lr, {args.ld_alpha} ld_alpha)')
+    plt.title(f'GAN2d dynamic {dataset_name[0].upper()}{dataset_name[1:]} Train Losses ({args.batch_size} bs, {args.lr} lr, {args.ld_alpha} ld_alpha)')
     plt.legend()
 
     # Save the plot to a file
     save_dir = 'runs/plots/' + dataset_name
     os.makedirs(save_dir, exist_ok=True)
-    plt.savefig(os.path.join(save_dir,f'gan2d_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_{args.ld_alpha}_ld_alpha_DYNAMIC_train_plot.png'))
+    plt.savefig(os.path.join(save_dir,f'gan2d_dynamic_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_{args.ld_alpha}_ld_alpha_train_plot.png'))
     plt.show()
 
     print('End of training process for', dataset_name, 'dataset!')
