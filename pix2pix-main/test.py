@@ -124,7 +124,7 @@ with torch.no_grad():
                 start_index += len(args.dataset) + 1
                 if (args.generator_path.find('gan2d_dynamic') != -1):
                     end_index = args.generator_path.find('_ld_alpha', start_index)
-                    model_params = 'gan2d_dynamic' + args.generator_path[start_index:end_index + 9]
+                    model_params = 'gan2d_dynamic_' + args.generator_path[start_index:end_index + 9]
                 elif (args.generator_path.find('gan2d') != -1):
                     end_index = args.generator_path.find('_ld_alpha', start_index)
                     model_params = 'gan2d_' + args.generator_path[start_index:end_index + 9]
