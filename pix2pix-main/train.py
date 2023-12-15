@@ -75,7 +75,8 @@ for dataset_name in datasets_to_process:
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         csv_file = open(f'{dataset_name}_{timestamp}_training_log.csv', 'w', newline='')
         csv_writer = csv.writer(csv_file)
-        csv_writer.writerow(['Epoch', ' G Training Loss', 'D Training Loss', 'G Validation Loss', 'D Validation Loss', 'Cur Val loss', 'Epoch Time (s)'])
+        csv_writer.writerow(['Epoch', ' G Training Loss', 'D Training Loss', 'G Validation Loss', 'Epoch Time (s)'])
+        #csv_writer.writerow(['Epoch', ' G Training Loss', 'D Training Loss', 'G Validation Loss', 'D Validation Loss', 'Cur Val loss', 'Epoch Time (s)'])
 
 
     print('Start of training process for', dataset_name, 'dataset!')
@@ -128,54 +129,54 @@ for dataset_name in datasets_to_process:
         bar.finish()
 
         # Validation Step
-        generator.eval()
-        discriminator.eval()
-        ge_val_loss=0.
-        de_val_loss=0.
+        # generator.eval()
+        # discriminator.eval()
+        # ge_val_loss=0.
+        # de_val_loss=0.
 
-        # Break the training loop if validation loss hasn't improved for 10 epochs
+        # Break the training loop if validation loss hasn't improved for 10 epochs, (didnt use at the end)
         # if epochs_since_improvement >= 10:
         #    print(f"Early stopping triggered after {epoch + 1} epochs due to no improvement in validation loss")
         #    break
 
-        with torch.no_grad():
-            bar = IncrementalBar(f'[Validation]', max=len(val_dataloader))
-            for val_x, val_real in val_dataloader:
-                val_x = val_x.to(device)
-                val_real = val_real.to(device)
+        # with torch.no_grad():
+        #     bar = IncrementalBar(f'[Validation]', max=len(val_dataloader))
+        #     for val_x, val_real in val_dataloader:
+        #         val_x = val_x.to(device)
+        #         val_real = val_real.to(device)
+        #
+        #         # Generator`s loss for validation
+        #         val_fake = generator(val_x)
+        #         val_fake_pred = discriminator(val_fake, val_x)
+        #         val_g_loss = g_criterion(val_fake, val_real, val_fake_pred)
+        #
+        #         # Discriminator`s loss for validation
+        #         val_fake = generator(val_x).detach()
+        #         val_fake_pred = discriminator(val_fake, val_x)
+        #         val_real_pred = discriminator(val_real, val_x)
+        #         val_d_loss = d_criterion(val_fake_pred, val_real_pred)
+        #
+        #         # add batch losses
+        #         ge_val_loss += val_g_loss.item()
+        #         de_val_loss += val_d_loss.item()
+        #         bar.next()
+        #     bar.finish()
 
-                # Generator`s loss for validation
-                val_fake = generator(val_x)
-                val_fake_pred = discriminator(val_fake, val_x)
-                val_g_loss = g_criterion(val_fake, val_real, val_fake_pred)
-
-                # Discriminator`s loss for validation
-                val_fake = generator(val_x).detach()
-                val_fake_pred = discriminator(val_fake, val_x)
-                val_real_pred = discriminator(val_real, val_x)
-                val_d_loss = d_criterion(val_fake_pred, val_real_pred)
-
-                # add batch losses
-                ge_val_loss += val_g_loss.item()
-                de_val_loss += val_d_loss.item()
-                bar.next()
-            bar.finish()
-
-        current_val_loss = (ge_val_loss + de_val_loss) / len(val_dataloader)
-        # Early stopping check
-        if current_val_loss < best_val_loss:
-            best_val_loss = current_val_loss
-            epochs_since_improvement = 0
-        else:
-            epochs_since_improvement += 1
+        # current_val_loss = (ge_val_loss + de_val_loss) / len(val_dataloader)
+        # Early stopping check (didnt use at the end)
+        # if current_val_loss < best_val_loss:
+        #     best_val_loss = current_val_loss
+        #     epochs_since_improvement = 0
+        # else:
+        #     epochs_since_improvement += 1
 
         # obtain per epoch losses for both training and validation
         # len(train_dataloader) is the number of train batches when batch size is args.batch_size
         # len(val_dataloader) is the number of val batches when batch size is args.batch_size
         g_loss = ge_loss / len(train_dataloader)
         d_loss = de_loss / len(train_dataloader)
-        val_g_loss = ge_val_loss / len(val_dataloader)
-        val_d_loss = de_val_loss / len(val_dataloader)
+        # val_g_loss = ge_val_loss / len(val_dataloader)
+        # val_d_loss = de_val_loss / len(val_dataloader)
 
         # count timeframe
         end = time.time()
@@ -184,22 +185,25 @@ for dataset_name in datasets_to_process:
         # Append losses to the lists
         train_generator_losses.append(g_loss)
         train_discriminator_losses.append(d_loss)
-        val_generator_losses.append(val_g_loss)
-        val_discriminator_losses.append(val_d_loss)
+        # val_generator_losses.append(val_g_loss)
+        # val_discriminator_losses.append(val_d_loss)
 
         logger.add_scalar('generator_loss', g_loss, epoch+1)
         logger.add_scalar('discriminator_loss', d_loss, epoch+1)
-        logger.add_scalar('val_generator_loss', val_g_loss, epoch + 1)
-        logger.add_scalar('current_val_loss', current_val_loss, epoch + 1)
+        # logger.add_scalar('val_generator_loss', val_g_loss, epoch + 1)
+        # logger.add_scalar('current_val_loss', current_val_loss, epoch + 1)
 
         # Save trained models
         logger.save_weights(generator.state_dict(), f'{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_generator_base')
         logger.save_weights(discriminator.state_dict(), f'{dataset_name}_{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_discriminator_base')
 
         if args.csv:
-            csv_writer.writerow([epoch + 1,g_loss, d_loss, val_g_loss, val_d_loss, current_val_loss, tm])
-        print("[Epoch %d/%d] [G loss: %.3f] [D loss: %.3f] [Val G loss: %.3f] [Val D loss: %.3f] [Cur Val loss: %.3f] ETA: %.3fs"
-            % (epoch + 1, args.epochs, g_loss, d_loss, val_g_loss, val_d_loss, current_val_loss, tm))
+            csv_writer.writerow([epoch + 1,g_loss, d_loss, tm])
+            # csv_writer.writerow([epoch + 1,g_loss, d_loss, val_g_loss, val_d_loss, current_val_loss, tm])
+        print("[Epoch %d/%d] [G loss: %.3f] [D loss: %.3f] ETA: %.3fs"
+            % (epoch + 1, args.epochs, g_loss, d_loss, tm))
+        # print("[Epoch %d/%d] [G loss: %.3f] [D loss: %.3f] [Val G loss: %.3f] [Val D loss: %.3f] [Cur Val loss: %.3f] ETA: %.3fs"
+        #     % (epoch + 1, args.epochs, g_loss, d_loss, val_g_loss, val_d_loss, current_val_loss, tm))
 
     logger.close()
 
@@ -233,33 +237,33 @@ for dataset_name in datasets_to_process:
     plt.savefig(os.path.join(save_dir,f'{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_train_plot.png'))
     plt.show()
 
-    # Plot the val losses
-    epochs_range = range(1, args.epochs + 1)
-    fig, ax1 = plt.subplots(figsize=(10, 5))
-
-    # Plot Discriminator Loss on the left y-axis
-    ax1.plot(epochs_range, val_discriminator_losses, label='Validation Discriminator Loss', color='blue')
-    ax1.set_xlabel('Epochs')
-    ax1.set_ylabel('Discriminator Loss', color='blue')
-    ax1.tick_params(axis='y', labelcolor='blue')
-    #ax1.legend(loc='upper left')
-
-    # Create a secondary y-axis for Generator Loss on the right
-    ax2 = ax1.twinx()
-    ax2.plot(epochs_range, val_generator_losses, label='Validation Generator Loss', color='green')
-    ax2.set_ylabel('Generator Loss', color='green')
-    ax2.tick_params(axis='y', labelcolor='green')
-    #ax2.legend(loc='upper right')
-
-    ax1.xaxis.set_major_locator(MaxNLocator(integer=True)) # Set x-axis ticks as integer values
-    plt.title(f'{dataset_name[0].upper()}{dataset_name[1:]} Validation Losses ({args.batch_size} bs, {args.lr} lr)')
-    #plt.legend()
-
-    # Save the plot to a file
-    save_dir = 'runs/plots/' + dataset_name
-    os.makedirs(save_dir, exist_ok=True)
-    plt.savefig(os.path.join(save_dir,f'{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_val_plot.png'))
-    plt.show()
+    # # Plot the val losses
+    # epochs_range = range(1, args.epochs + 1)
+    # fig, ax1 = plt.subplots(figsize=(10, 5))
+    #
+    # # Plot Discriminator Loss on the left y-axis
+    # ax1.plot(epochs_range, val_discriminator_losses, label='Validation Discriminator Loss', color='blue')
+    # ax1.set_xlabel('Epochs')
+    # ax1.set_ylabel('Discriminator Loss', color='blue')
+    # ax1.tick_params(axis='y', labelcolor='blue')
+    # #ax1.legend(loc='upper left')
+    #
+    # # Create a secondary y-axis for Generator Loss on the right
+    # ax2 = ax1.twinx()
+    # ax2.plot(epochs_range, val_generator_losses, label='Validation Generator Loss', color='green')
+    # ax2.set_ylabel('Generator Loss', color='green')
+    # ax2.tick_params(axis='y', labelcolor='green')
+    # #ax2.legend(loc='upper right')
+    #
+    # ax1.xaxis.set_major_locator(MaxNLocator(integer=True)) # Set x-axis ticks as integer values
+    # plt.title(f'{dataset_name[0].upper()}{dataset_name[1:]} Validation Losses ({args.batch_size} bs, {args.lr} lr)')
+    # #plt.legend()
+    #
+    # # Save the plot to a file
+    # save_dir = 'runs/plots/' + dataset_name
+    # os.makedirs(save_dir, exist_ok=True)
+    # plt.savefig(os.path.join(save_dir,f'{args.epochs}_epochs_{args.batch_size}_bs_{args.lr}_lr_val_plot.png'))
+    # plt.show()
 
     print('End of training process for', dataset_name, 'dataset!')
 
