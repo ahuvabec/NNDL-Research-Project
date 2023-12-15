@@ -136,7 +136,8 @@ with torch.no_grad():
                     model_params = args.generator_path[start_index:end_index + 3]
                 save_dir = save_dir + model_params
             os.makedirs(save_dir, exist_ok=True)
-            print(f'imgaes will be saved to {save_dir}')
+            if (i == 0):
+                print(f'imgaes will be saved to {save_dir}')
             plt.savefig(os.path.join(save_dir, f'{args.dataset}_image_{i+1}.png'))
 
             if i < num_show:
