@@ -1,3 +1,4 @@
+import sys
 import torch
 from torch.utils.data import DataLoader
 import argparse
@@ -6,21 +7,27 @@ from progress.bar import IncrementalBar
 import os
 from PIL import Image
 
-from dataset import Cityscapes, Facades, Maps
-from dataset import transforms as T
-from gan.generator import UnetGenerator
-from gan.discriminator import ConditionalDiscriminator
-from gan.criterion import GeneratorLoss, DiscriminatorLoss
-from dataset import Cityscapes, Facades, Maps
-from gan.utils import Logger
-
 # Argument Parser
 parser = argparse.ArgumentParser(prog='top', description='Test Pix2Pix Generator and Discriminator')
 parser.add_argument("--generator_path", type=str, required=True, help="Path to the saved generator weights")
 #parser.add_argument("--discriminator_path", type=str, required=True, help="Path to the saved discriminator weights")
 parser.add_argument("--dataset", type=str, default="facades", help="Name of the dataset: ['facades', 'maps', 'cityscapes']")
-parser.add_argument("--num_imgs", type=int, default="1", help="Num of images to generate (max is the number of imgs in data set)")
+parser.add_argument("--num_imgs", type=int, default=1, help="Number of images to generate (max is the number of imgs in dataset)")
+parser.add_argument("--gan_folder", type=str, default="gan", choices=["gan", "gan_multiply", "gan_add"], help="Folder to import GAN from")
 args = parser.parse_args()
+
+# Append the chosen folder to the system path
+sys.path.append(args.gan_folder)
+
+# Now import the GAN modules from the specified folder
+from generator import UnetGenerator
+from discriminator import ConditionalDiscriminator
+from criterion import GeneratorLoss, DiscriminatorLoss
+from utils import Logger
+
+# Import dataset modules
+from dataset import Cityscapes, Facades, Maps
+from dataset import transforms as T
 
 # Define the device
 device = ('cuda:0' if torch.cuda.is_available() else 'cpu')
