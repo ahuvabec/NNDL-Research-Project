@@ -34,7 +34,6 @@ from discriminator import ConditionalDiscriminator
 from criterion import GeneratorLoss, DiscriminatorLoss
 from utils import Logger, initialize_weights
 
-# Rest of your script...
 
 
 device = ('cuda:0' if torch.cuda.is_available() else 'cpu')
