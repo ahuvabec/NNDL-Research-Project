@@ -6,7 +6,7 @@ Authors: Maitar Asher, Ahuva Bechhofer, Shmuel Berman
 
 # About
 
-Building upon Isola et al.'s pioneering work in "Image-to-Image Translation with Conditional Adversarial Networks", this project focuses on the Pix2Pix software associated with their paper. By exploring modifications and refinements to their CGAN network architecture, including variations in the generator's and discriminator's design, our objective is to delve deeper into the underlying mechanisms contributing to the remarkable efficacy of Pix2Pix.
+Building upon Isola et al.'s pioneering work in "Image-to-Image Translation with Conditional Adversarial Networks", this project focuses on the Pix2Pix software associated with their [paper](https://arxiv.org/pdf/1611.07004.pdf). By exploring modifications and refinements to their CGAN network architecture, including variations in the generator's and discriminator's design, our objective is to delve deeper into the underlying mechanisms contributing to the remarkable efficacy of Pix2Pix.
 
 # Acknowledgments:
 We utilized the codebase from https://github.com/akanametov/pix2pix as a foundation and incorporated our custom modifications.
@@ -64,5 +64,14 @@ python train2d_dynamic_v2.py [--epochs EPOCHS] [--dataset DATASET] [--batch_size
 # Testing
 
 ```
-python test.py [----generator_path GENERATOR_PATH] [--dataset DATASET] [--num_imgs NUM_IMGS]
+python test.py [--generator_path GENERATOR_PATH] [--dataset DATASET] [--num_imgs NUM_IMGS]
+```
+```
+optional arguments:
+  -h, --help            show this help message and exit
+  --generator_path GENERATOR_PATH
+                        Path to the saved generator weights
+  --dataset DATASET     Name of the dataset: ['facades', 'maps', 'cityscapes']
+  --num_imgs NUM_IMGS   Number of images to generate  
+
 ```
