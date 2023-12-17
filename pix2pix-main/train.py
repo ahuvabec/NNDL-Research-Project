@@ -1,3 +1,4 @@
+import sys
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
@@ -10,13 +11,9 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import os
 
+# Import dataset modules
 from dataset import Cityscapes, Facades, Maps
 from dataset import transforms as T
-from gan.generator import UnetGenerator
-from gan.discriminator import ConditionalDiscriminator
-from gan.criterion import GeneratorLoss, DiscriminatorLoss
-from gan.utils import Logger, initialize_weights
-
 
 # Argument parser
 parser = argparse.ArgumentParser(prog='top', description='Train Pix2Pix')
@@ -25,7 +22,20 @@ parser.add_argument("--dataset", type=str, default="facades", help="Name of the 
 parser.add_argument("--batch_size", type=int, default=1, help="Size of the batches")
 parser.add_argument("--lr", type=float, default=0.0002, help="Adams learning rate")
 parser.add_argument("--csv", action='store_true', help="Enable CSV logging")
+parser.add_argument("--gan_folder", type=str, default="gan", choices=["gan", "gan_multiply", "gan_add"], help="Folder to import GAN from")
 args = parser.parse_args()
+
+# Append the chosen folder to the system path
+sys.path.append(args.gan_folder)
+
+# Now import the GAN modules from the specified folder
+from generator import UnetGenerator
+from discriminator import ConditionalDiscriminator
+from criterion import GeneratorLoss, DiscriminatorLoss
+from utils import Logger, initialize_weights
+
+# Rest of your script...
+
 
 device = ('cuda:0' if torch.cuda.is_available() else 'cpu')
 
