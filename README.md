@@ -60,7 +60,7 @@ python train2d_dynamic.py [--epochs EPOCHS] [--dataset DATASET] [--batch_size BA
 python train2d_dynamic_v2.py [--epochs EPOCHS] [--dataset DATASET] [--batch_size BATCH_SIZE] [--lr LR] [--ld_alpha LD_ALPHA]
 ```
 ## Skip Connection Variation
-# Training
+
 ```
 python train_skip.py [--epochs EPOCHS] [--dataset DATASET] [--batch_size BATCH_SIZE] [--lr LR] [--gan_folder {gan,gan_multiply,gan_add}]
 ```
@@ -88,6 +88,6 @@ optional arguments:
   --dataset DATASET     Name of the dataset: ['facades', 'maps', 'cityscapes']
   --num_imgs NUM_IMGS   Number of images to generate
   --gan_folder {gan,gan_multiply,gan_add}
-                        Folder to import GAN from 
+                        Folder to import GAN from
 
 ```
