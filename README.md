@@ -60,11 +60,25 @@ python train2d_dynamic.py [--epochs EPOCHS] [--dataset DATASET] [--batch_size BA
 python train2d_dynamic_v2.py [--epochs EPOCHS] [--dataset DATASET] [--batch_size BATCH_SIZE] [--lr LR] [--ld_alpha LD_ALPHA]
 ```
 ## Skip Connection Variation
-
+# Training
+```
+python train_skip.py [--epochs EPOCHS] [--dataset DATASET] [--batch_size BATCH_SIZE] [--lr LR] [--gan_folder {gan,gan_multiply,gan_add}]
+```
+```
+optional arguments:
+  -h, --help            show this help message and exit
+  --epochs EPOCHS       Number of epochs
+  --dataset DATASET     Name of the dataset: ['facades', 'maps', 'cityscapes']
+  --batch_size BATCH_SIZE
+                        Size of the batches
+  --lr LR               Adams learning rate
+  --gan_folder {gan,gan_multiply,gan_add}
+                        Folder to import GAN from
+```
 # Testing
 
 ```
-python test.py [--generator_path GENERATOR_PATH] [--dataset DATASET] [--num_imgs NUM_IMGS]
+python test.py [--generator_path GENERATOR_PATH] [--dataset DATASET] [--num_imgs NUM_IMGS] [--gan_folder {gan,gan_multiply,gan_add}]
 ```
 ```
 optional arguments:
@@ -72,6 +86,8 @@ optional arguments:
   --generator_path GENERATOR_PATH
                         Path to the saved generator weights
   --dataset DATASET     Name of the dataset: ['facades', 'maps', 'cityscapes']
-  --num_imgs NUM_IMGS   Number of images to generate  
+  --num_imgs NUM_IMGS   Number of images to generate
+  --gan_folder {gan,gan_multiply,gan_add}
+                        Folder to import GAN from 
 
 ```
